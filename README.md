@@ -1,147 +1,122 @@
-# Flask SNS 애플리케이션
+# Flask SNS 포터블 앱 🚀
 
-Flask로 개발된 소셜 네트워킹 서비스(SNS) 애플리케이션입니다. 사용자들이 게시물을 작성하고, 댓글을 달며, 파일을 업로드할 수 있는 웹 애플리케이션입니다.
+USB에 복사하여 어디서든 실행할 수 있는 개인 SNS 애플리케이션입니다.
 
-## 🚀 주요 기능
+## ✨ 주요 기능
 
-- **사용자 관리**
-  - 회원가입 및 로그인
-  - 비밀번호 변경
-  - 계정 잠금 기능 (보안)
-  - 프로필 관리
+- **개인 SNS**: 나만의 소셜 네트워크 서비스
+- **파일 첨부**: 이미지, 비디오, 문서, 오디오 파일 업로드
+- **URL 미리보기**: 링크 공유 시 자동 미리보기 생성
+- **댓글 시스템**: 게시물에 댓글 작성
+- **사용자 관리**: 계정 생성, 비밀번호 변경
+- **포터블**: USB에 복사하여 어디서든 실행
 
-- **게시물 관리**
-  - 게시물 작성 및 수정
-  - 게시물 삭제
-  - 댓글 작성
-  - URL 미리보기 기능
+## 🚀 시작하기
 
-- **파일 업로드**
-  - 이미지 및 문서 파일 업로드
-  - 파일 다운로드
-  - 파일 삭제
+### 1. 실행 방법
 
-- **관리자 기능**
-  - 사용자 관리
-  - 시스템 모니터링
-
-## 🛠️ 기술 스택
-
-- **Backend**: Flask 2.3.3
-- **Database**: SQLite (Flask-SQLAlchemy)
-- **Authentication**: Flask-Login
-- **File Handling**: Pillow, python-magic
-- **Web Scraping**: BeautifulSoup4 (URL 미리보기)
-- **Production Server**: Waitress
-
-## 📋 설치 및 실행
-
-### 1. 저장소 클론
 ```bash
-git clone <repository-url>
-cd flask_sns_app
+# Python이 설치된 경우
+python FlaskSNS.py
+
+# 또는 더블클릭으로 실행
+FlaskSNS.py
 ```
 
-### 2. 가상환경 생성 및 활성화 (선택사항)
-```bash
-# Windows
-python -m venv venv
-venv\Scripts\activate
+### 2. 접속
 
-# macOS/Linux
-python3 -m venv venv
-source venv/bin/activate
+- **URL**: http://localhost:5001
+- **기본 계정**: admin / admin123
+
+### 3. USB 사용
+
+1. 이 폴더 전체를 USB에 복사
+2. USB를 다른 PC에 연결
+3. `FlaskSNS.py` 실행
+4. 브라우저에서 접속
+
+## 📁 폴더 구조
+
+```
+FlaskSNS/
+├── FlaskSNS.py          # 메인 실행 파일
+├── app.py              # Flask 애플리케이션
+├── requirements.txt    # Python 패키지 목록
+├── templates/          # HTML 템플릿
+├── utils/             # 유틸리티 함수
+├── sns.db             # 데이터베이스 (자동 생성)
+├── uploads/           # 업로드 파일 (자동 생성)
+└── README.md          # 이 파일
 ```
 
-### 3. 의존성 설치
+## 💾 데이터 저장
+
+모든 데이터는 실행 파일과 같은 폴더에 저장됩니다:
+
+- **데이터베이스**: `sns.db` (계정, 게시물, 댓글)
+- **업로드 파일**: `uploads/` 폴더
+  - `images/` - 이미지 파일
+  - `videos/` - 비디오 파일
+  - `documents/` - 문서 파일
+  - `audio/` - 오디오 파일
+  - `archives/` - 압축 파일
+
+## 🔧 시스템 요구사항
+
+- **OS**: Windows 10/11, macOS, Linux
+- **Python**: 3.8 이상
+- **메모리**: 최소 512MB
+- **저장공간**: 최소 100MB
+
+## 📦 필요한 패키지
+
 ```bash
-# 가상환경을 사용하는 경우
 pip install -r requirements.txt
-
-# 가상환경을 사용하지 않는 경우 (시스템에 직접 설치)
-pip install Flask Flask-SQLAlchemy Flask-Login Flask-WTF WTForms Werkzeug requests beautifulsoup4 python-dotenv Pillow waitress filetype
 ```
 
-### 4. 환경 변수 설정 (선택사항)
-```bash
-# .env 파일 생성
-SECRET_KEY=your-secret-key-here
-```
+### 주요 패키지
+- Flask - 웹 프레임워크
+- Flask-SQLAlchemy - 데이터베이스 ORM
+- Flask-Login - 사용자 인증
+- Pillow - 이미지 처리
+- filetype - 파일 타입 감지
+- requests - HTTP 요청
+- BeautifulSoup4 - 웹 스크래핑
 
-### 5. 데이터베이스 초기화
-```bash
-python
->>> from app import app, db
->>> with app.app_context():
-...     db.create_all()
->>> exit()
-```
+## 🛡️ 보안
 
-### 6. 애플리케이션 실행
-```bash
-python app.py
-```
+- **기본 비밀번호**: 첫 실행 시 admin/admin123
+- **비밀번호 변경**: 로그인 후 프로필에서 변경 권장
+- **데이터 보호**: 모든 데이터는 로컬에만 저장
 
-애플리케이션이 `http://localhost:5000`에서 실행됩니다.
+## 🔄 업데이트
 
-## 📁 프로젝트 구조
+1. 기존 폴더 백업
+2. 새 버전 다운로드
+3. 기존 `sns.db`와 `uploads/` 폴더 복사
+4. 새 버전 실행
 
-```
-flask_sns_app/
-├── app.py                 # 메인 애플리케이션 파일
-├── run.py                 # 실행 스크립트
-├── requirements.txt       # Python 의존성
-├── config/               # 설정 파일
-├── templates/            # HTML 템플릿
-│   ├── base.html         # 기본 템플릿
-│   ├── index.html        # 메인 페이지
-│   ├── login.html        # 로그인 페이지
-│   ├── register.html     # 회원가입 페이지
-│   ├── new_post.html     # 게시물 작성 페이지
-│   ├── view_post.html    # 게시물 보기 페이지
-│   ├── profile.html      # 프로필 페이지
-│   ├── admin.html        # 관리자 페이지
-│   └── change_password.html # 비밀번호 변경 페이지
-└── utils/                # 유틸리티 함수
-    ├── file_utils.py     # 파일 처리 유틸리티
-    └── url_utils.py      # URL 미리보기 유틸리티
-```
+## 🐛 문제 해결
 
-## 🔧 주요 라우트
+### 포트 충돌
+- 다른 포트 사용 중인 경우 자동으로 다른 포트 선택
 
-- `/` - 메인 페이지 (로그인 후 게시물 목록)
-- `/login` - 로그인
-- `/register` - 회원가입
-- `/logout` - 로그아웃
-- `/post/new` - 새 게시물 작성
-- `/post/<id>` - 게시물 보기
-- `/profile` - 사용자 프로필
-- `/admin` - 관리자 페이지
-- `/change_password` - 비밀번호 변경
+### 파일 업로드 실패
+- 파일 크기 제한: 10MB
+- 지원 형식 확인
 
-## 🔒 보안 기능
+### 데이터베이스 오류
+- `sns.db` 파일 삭제 후 재실행
+- 백업 데이터 복원
 
-- 비밀번호 해싱 (Werkzeug)
-- 계정 잠금 기능 (로그인 실패 시)
-- 세션 관리
-- 파일 업로드 검증
+## 📞 지원
 
-## 📝 API 엔드포인트
-
-- `GET /api/posts` - 게시물 목록 (JSON)
-
-## 🤝 기여하기
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+문제가 있으면 GitHub 이슈를 생성해주세요.
 
 ## 📄 라이선스
 
-이 프로젝트는 MIT 라이선스 하에 배포됩니다.
+MIT License
 
-## 📞 문의
+---
 
-프로젝트에 대한 문의사항이 있으시면 이슈를 생성해 주세요. 
+**Flask SNS 포터블 앱** - 나만의 소셜 네트워크를 USB에 담아가세요! 💾✨ 

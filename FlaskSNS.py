@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Flask SNS 앱 프로덕션 실행 스크립트
-Windows용 Waitress 서버 사용
+Flask SNS 포터블 앱 실행 파일
+USB에 복사하여 어디서든 실행할 수 있는 개인 SNS 애플리케이션
 """
 
 import os
@@ -14,9 +14,10 @@ from app import app, db, User
 from werkzeug.security import generate_password_hash
 
 if __name__ == '__main__':
-    print("🚀 Flask SNS 앱을 프로덕션 모드로 시작합니다...")
-    print("📱 브라우저에서 http://localhost:5000 으로 접속하세요")
+    print("🚀 Flask SNS 포터블 앱을 시작합니다...")
+    print("📱 브라우저에서 http://localhost:5001 으로 접속하세요")
     print("🔑 기본 관리자 계정: admin / admin123")
+    print("💾 모든 데이터는 이 폴더에 저장됩니다")
     print("⏹️  종료하려면 Ctrl+C를 누르세요")
     print("-" * 50)
     
@@ -39,21 +40,15 @@ if __name__ == '__main__':
         if not admin_user:
             admin_user = User(
                 username='admin',
-                password_hash=generate_password_hash('admin123')
+                password_hash=generate_password_hash('admin123'),
+                password_changed=False  # 기본 비밀번호 사용 중
             )
             db.session.add(admin_user)
             db.session.commit()
             print("✅ 기본 관리자 계정이 생성되었습니다. (admin/admin123)")
+            print("⚠️  보안을 위해 첫 로그인 시 비밀번호 변경을 권장합니다.")
         else:
             print("ℹ️  관리자 계정이 이미 존재합니다.")
     
-    print("🌐 프로덕션 웹 서버를 시작합니다...")
-    
-    try:
-        # Waitress 서버 사용 (Windows용)
-        from waitress import serve
-        serve(app, host='0.0.0.0', port=5000, threads=4)
-    except ImportError:
-        print("⚠️  Waitress가 설치되지 않았습니다. 개발 서버로 실행합니다.")
-        print("💡 프로덕션 배포를 위해 'pip install waitress'를 실행하세요.")
-        app.run(host='0.0.0.0', port=5000, debug=False) 
+    print("🌐 웹 서버를 시작합니다...")
+    app.run(debug=False, host='0.0.0.0', port=5001) 

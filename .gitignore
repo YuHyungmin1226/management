@@ -22,24 +22,11 @@ wheels/
 MANIFEST
 
 # Virtual environments
-.env
-.venv
-env/
 venv/
+env/
 ENV/
 env.bak/
 venv.bak/
-
-# Flask
-instance/
-.webassets-cache
-
-# Uploads and data
-uploads/
-posts.json
-users.json
-session.json
-*.log
 
 # IDE
 .vscode/
@@ -57,11 +44,23 @@ session.json
 ehthumbs.db
 Thumbs.db
 
-# Database
-*.db
-*.sqlite
+# Flask
+instance/
+.webassets-cache
+
+# Database (개발용 - 실제 사용 시에는 포함)
+# sns.db
+
+# Uploads (개발용 - 실제 사용 시에는 포함)
+# uploads/
 
 # Logs
-logs/
-temp/
-tmp/ 
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Backup files
+*.bak
+*.backup 
