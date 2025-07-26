@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from werkzeug.utils import secure_filename
 from PIL import Image
-import magic
+import filetype
 import json
 
 # 파일 업로드 설정
@@ -229,30 +229,25 @@ def validate_file(file):
     # 파일 내용 확인 (MIME 타입)
     try:
         file.seek(0)
-        mime_type = magic.from_buffer(file.read(1024), mime=True)
+        file_content = file.read(1024)
         file.seek(0)  # 파일 포인터를 다시 처음으로
         
-        # MIME 타입 검증 (기본적인 검증)
-        allowed_mimes = {
-            'image/': 'image',
-            'application/pdf': 'document',
-            'application/msword': 'document',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'document',
-            'text/': 'document',
-            'video/': 'video',
-            'audio/': 'audio',
-            'application/zip': 'archive',
-            'application/x-rar-compressed': 'archive'
-        }
-        
-        is_valid_mime = False
-        for mime_pattern, file_type in allowed_mimes.items():
-            if mime_type.startswith(mime_pattern):
-                is_valid_mime = True
-                break
-        
-        if not is_valid_mime:
-            errors.append("파일 내용이 허용되지 않는 형식입니다.")
+        # filetype을 사용한 MIME 타입 검증
+        kind = filetype.guess(file_content)
+        if kind:
+            mime_type = kind.mime
+            extension = kind.extension
+            
+            # 허용된 확장자 확인
+            allowed_extensions = set()
+            for extensions in ALLOWED_EXTENSIONS.values():
+                allowed_extensions.update(extensions)
+            
+            if extension not in allowed_extensions:
+                errors.append("파일 내용이 허용되지 않는 형식입니다.")
+        else:
+            # filetype이 감지하지 못한 경우 확장자로만 확인
+            pass
             
     except Exception as e:
         errors.append("파일 검증 중 오류가 발생했습니다.")

@@ -42,7 +42,7 @@ git clone <repository-url>
 cd flask_sns_app
 ```
 
-### 2. 가상환경 생성 및 활성화
+### 2. 가상환경 생성 및 활성화 (선택사항)
 ```bash
 # Windows
 python -m venv venv
@@ -55,7 +55,11 @@ source venv/bin/activate
 
 ### 3. 의존성 설치
 ```bash
+# 가상환경을 사용하는 경우
 pip install -r requirements.txt
+
+# 가상환경을 사용하지 않는 경우 (시스템에 직접 설치)
+pip install Flask Flask-SQLAlchemy Flask-Login Flask-WTF WTForms Werkzeug requests beautifulsoup4 python-dotenv Pillow waitress filetype
 ```
 
 ### 4. 환경 변수 설정 (선택사항)
