@@ -12,7 +12,17 @@ from utils.file_utils import save_file, validate_file, get_file_info_from_json, 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sns.db'
+
+# 포터블 버전 대응 - 데이터베이스 경로 설정
+if getattr(sys, 'frozen', False):
+    # PyInstaller로 빌드된 경우
+    current_dir = os.path.dirname(sys.executable)
+else:
+    # 일반 Python 실행의 경우
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
+db_path = os.path.join(current_dir, 'sns.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
