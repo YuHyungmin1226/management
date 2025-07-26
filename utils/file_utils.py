@@ -290,10 +290,20 @@ def delete_file(file_path):
     """파일 삭제 (안전한 방법)"""
     try:
         if os.path.exists(file_path):
-            # Windows에서 파일이 사용 중일 때를 대비한 안전한 삭제
-            import time
-            max_retries = 3
-            retry_delay = 0.5  # 0.5초 대기
+            # 파일 타입에 따른 삭제 전략 결정
+            file_ext = os.path.splitext(file_path)[1].lower()
+            is_video = file_ext in ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.mkv', '.webm']
+            is_audio = file_ext in ['.mp3', '.wav', '.flac', '.ogg', '.m4a', '.aac']
+            is_media = is_video or is_audio
+            
+            # 미디어 파일은 더 긴 대기 시간과 더 많은 재시도
+            if is_media:
+                max_retries = 5
+                retry_delay = 1.0  # 1초 대기
+                print(f"🎬 미디어 파일 삭제 시도: {file_path}")
+            else:
+                max_retries = 3
+                retry_delay = 0.5  # 0.5초 대기
             
             for attempt in range(max_retries):
                 try:
@@ -304,10 +314,18 @@ def delete_file(file_path):
                     if "다른 프로세스가 사용 중" in str(pe) or "being used by another process" in str(pe):
                         print(f"⚠️ 파일이 사용 중입니다. 재시도 {attempt + 1}/{max_retries}: {file_path}")
                         if attempt < max_retries - 1:
-                            time.sleep(retry_delay)
+                            # 미디어 파일은 점진적으로 대기 시간 증가
+                            if is_media and attempt > 1:
+                                current_delay = retry_delay * (attempt + 1)
+                                print(f"⏳ {current_delay}초 대기 중... (미디어 파일)")
+                                time.sleep(current_delay)
+                            else:
+                                time.sleep(retry_delay)
                             continue
                         else:
                             print(f"❌ 파일 삭제 실패 (최대 재시도 초과): {file_path}")
+                            if is_media:
+                                print(f"💡 미디어 파일 삭제 실패 - 브라우저에서 재생을 중지하고 다시 시도해주세요.")
                             return False
                     else:
                         raise
@@ -315,10 +333,18 @@ def delete_file(file_path):
                     if "다른 프로세스가 사용 중" in str(ose) or "being used by another process" in str(ose):
                         print(f"⚠️ 파일이 사용 중입니다. 재시도 {attempt + 1}/{max_retries}: {file_path}")
                         if attempt < max_retries - 1:
-                            time.sleep(retry_delay)
+                            # 미디어 파일은 점진적으로 대기 시간 증가
+                            if is_media and attempt > 1:
+                                current_delay = retry_delay * (attempt + 1)
+                                print(f"⏳ {current_delay}초 대기 중... (미디어 파일)")
+                                time.sleep(current_delay)
+                            else:
+                                time.sleep(retry_delay)
                             continue
                         else:
                             print(f"❌ 파일 삭제 실패 (최대 재시도 초과): {file_path}")
+                            if is_media:
+                                print(f"💡 미디어 파일 삭제 실패 - 브라우저에서 재생을 중지하고 다시 시도해주세요.")
                             return False
                     else:
                         raise

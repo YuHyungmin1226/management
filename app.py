@@ -395,9 +395,33 @@ def delete_post(post_id):
     print(f"총 삭제된 파일 수: {len(deleted_files)}")
     print(f"삭제된 파일 목록: {deleted_files}")
     
+    # 삭제 실패한 파일이 있는지 확인
+    failed_files = []
+    if post.files and post.files != '[]':
+        files = get_file_info_from_json(post.files)
+        for file_info in files:
+            if 'saved_name' in file_info:
+                file_ext = os.path.splitext(file_info['saved_name'])[1].lower()
+                type_folders = {
+                    '.jpg': 'images', '.jpeg': 'images', '.png': 'images', '.gif': 'images', '.webp': 'images', '.bmp': 'images',
+                    '.mp4': 'videos', '.avi': 'videos', '.mov': 'videos', '.wmv': 'videos', '.flv': 'videos', '.mkv': 'videos',
+                    '.mp3': 'audio', '.wav': 'audio', '.flac': 'audio', '.ogg': 'audio', '.m4a': 'audio',
+                    '.pdf': 'documents', '.doc': 'documents', '.docx': 'documents', '.txt': 'documents', '.rtf': 'documents',
+                    '.zip': 'archives', '.rar': 'archives', '.7z': 'archives', '.tar': 'archives', '.gz': 'archives'
+                }
+                folder = type_folders.get(file_ext, 'documents')
+                file_path = os.path.join(current_dir, 'uploads', folder, file_info['saved_name'])
+                if os.path.exists(file_path):
+                    failed_files.append(file_info['original_name'])
+    
     db.session.delete(post)
     db.session.commit()
-    flash('게시글이 삭제되었습니다.', 'success')
+    
+    if failed_files:
+        flash(f'게시글이 삭제되었습니다. 일부 파일({", ".join(failed_files)})은 사용 중이어서 삭제되지 않았습니다. 브라우저에서 재생을 중지하고 다시 시도해주세요.', 'warning')
+    else:
+        flash('게시글이 삭제되었습니다.', 'success')
+    
     return redirect(url_for('index'))
 
 @app.route('/profile')
