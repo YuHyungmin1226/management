@@ -1,89 +1,143 @@
 # Flask SNS 애플리케이션
 
-Flask 기반의 소셜 네트워킹 서비스 애플리케이션입니다.
+Flask로 개발된 소셜 네트워킹 서비스(SNS) 애플리케이션입니다. 사용자들이 게시물을 작성하고, 댓글을 달며, 파일을 업로드할 수 있는 웹 애플리케이션입니다.
+
+## 🚀 주요 기능
+
+- **사용자 관리**
+  - 회원가입 및 로그인
+  - 비밀번호 변경
+  - 계정 잠금 기능 (보안)
+  - 프로필 관리
+
+- **게시물 관리**
+  - 게시물 작성 및 수정
+  - 게시물 삭제
+  - 댓글 작성
+  - URL 미리보기 기능
+
+- **파일 업로드**
+  - 이미지 및 문서 파일 업로드
+  - 파일 다운로드
+  - 파일 삭제
+
+- **관리자 기능**
+  - 사용자 관리
+  - 시스템 모니터링
+
+## 🛠️ 기술 스택
+
+- **Backend**: Flask 2.3.3
+- **Database**: SQLite (Flask-SQLAlchemy)
+- **Authentication**: Flask-Login
+- **File Handling**: Pillow, python-magic
+- **Web Scraping**: BeautifulSoup4 (URL 미리보기)
+- **Production Server**: Waitress
+
+## 📋 설치 및 실행
+
+### 1. 저장소 클론
+```bash
+git clone <repository-url>
+cd flask_sns_app
+```
+
+### 2. 가상환경 생성 및 활성화
+```bash
+# Windows
+python -m venv venv
+venv\Scripts\activate
+
+# macOS/Linux
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 3. 의존성 설치
+```bash
+pip install -r requirements.txt
+```
+
+### 4. 환경 변수 설정 (선택사항)
+```bash
+# .env 파일 생성
+SECRET_KEY=your-secret-key-here
+```
+
+### 5. 데이터베이스 초기화
+```bash
+python
+>>> from app import app, db
+>>> with app.app_context():
+...     db.create_all()
+>>> exit()
+```
+
+### 6. 애플리케이션 실행
+```bash
+python app.py
+```
+
+애플리케이션이 `http://localhost:5000`에서 실행됩니다.
 
 ## 📁 프로젝트 구조
 
 ```
 flask_sns_app/
 ├── app.py                 # 메인 애플리케이션 파일
-├── run.py                 # 애플리케이션 실행 스크립트
-├── requirements.txt       # Python 의존성 패키지
-├── templates/            # HTML 템플릿 파일들
-├── instance/             # 데이터베이스 파일 (자동 생성)
-├── uploads/              # 업로드된 파일들 (자동 생성)
-│
-├── docker/               # Docker 관련 파일들
-│   ├── Dockerfile        # Docker 이미지 설정
-│   ├── docker-compose.yml # 컨테이너 오케스트레이션
-│   └── .dockerignore     # Docker 빌드 제외 파일
-│
-├── scripts/              # 실행 스크립트들
-│   ├── start.bat         # Windows 실행 스크립트
-│   ├── start.sh          # macOS/Linux 실행 스크립트
-│   ├── cleanup.bat       # Windows 정리 스크립트
-│   └── cleanup.sh        # macOS/Linux 정리 스크립트
-│
-├── docs/                 # 문서 파일들
-│   ├── README.md         # 상세한 사용법 가이드
-│   ├── README_PORTABLE.md # 포터블 버전 사용법
-│   └── USB_GUIDE.md      # USB 사용 간단 가이드
-│
-├── utils/                # 유틸리티 모듈들
-│   ├── __init__.py       # 패키지 초기화 파일
-│   ├── file_utils.py     # 파일 처리 유틸리티
-│   └── url_utils.py      # URL 처리 유틸리티
-│
-├── tests/                # 테스트 파일들
-│   └── test_upload.py    # 파일 업로드 테스트
-│
-└── config/               # 설정 파일들
-    └── production.py     # 프로덕션 환경 설정
+├── run.py                 # 실행 스크립트
+├── requirements.txt       # Python 의존성
+├── config/               # 설정 파일
+├── templates/            # HTML 템플릿
+│   ├── base.html         # 기본 템플릿
+│   ├── index.html        # 메인 페이지
+│   ├── login.html        # 로그인 페이지
+│   ├── register.html     # 회원가입 페이지
+│   ├── new_post.html     # 게시물 작성 페이지
+│   ├── view_post.html    # 게시물 보기 페이지
+│   ├── profile.html      # 프로필 페이지
+│   ├── admin.html        # 관리자 페이지
+│   └── change_password.html # 비밀번호 변경 페이지
+└── utils/                # 유틸리티 함수
+    ├── file_utils.py     # 파일 처리 유틸리티
+    └── url_utils.py      # URL 미리보기 유틸리티
 ```
 
-## 🚀 빠른 시작
+## 🔧 주요 라우트
 
-### 일반 실행 (로컬 환경)
-```bash
-python3 run.py
-```
+- `/` - 메인 페이지 (로그인 후 게시물 목록)
+- `/login` - 로그인
+- `/register` - 회원가입
+- `/logout` - 로그아웃
+- `/post/new` - 새 게시물 작성
+- `/post/<id>` - 게시물 보기
+- `/profile` - 사용자 프로필
+- `/admin` - 관리자 페이지
+- `/change_password` - 비밀번호 변경
 
-### Docker 실행 (포터블)
-```bash
-# Windows
-scripts/start.bat
+## 🔒 보안 기능
 
-# macOS/Linux
-./scripts/start.sh
-```
+- 비밀번호 해싱 (Werkzeug)
+- 계정 잠금 기능 (로그인 실패 시)
+- 세션 관리
+- 파일 업로드 검증
 
-## 📋 주요 기능
+## 📝 API 엔드포인트
 
-- ✅ 사용자 등록/로그인/로그아웃
-- ✅ 게시물 작성/조회/삭제
-- ✅ 댓글 작성
-- ✅ 파일 업로드 및 미디어 미리보기
-- ✅ URL 미리보기 생성
-- ✅ 관리자 기능
-- ✅ 반응형 웹 디자인
+- `GET /api/posts` - 게시물 목록 (JSON)
 
-## 🔑 기본 계정
+## 🤝 기여하기
 
-- **관리자**: `admin` / `admin123`
-
-## 📖 상세 문서
-
-- [상세 사용법](docs/README.md)
-- [포터블 버전 사용법](docs/README_PORTABLE.md)
-- [USB 사용 가이드](docs/USB_GUIDE.md)
-
-## 🛠️ 개발 환경
-
-- Python 3.11+
-- Flask 2.3.3
-- SQLite 데이터베이스
-- Docker (포터블 버전)
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## 📄 라이선스
 
-이 프로젝트는 교육 목적으로 제작되었습니다. 
+이 프로젝트는 MIT 라이선스 하에 배포됩니다.
+
+## 📞 문의
+
+프로젝트에 대한 문의사항이 있으시면 이슈를 생성해 주세요. 
