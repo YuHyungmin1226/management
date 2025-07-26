@@ -57,8 +57,15 @@ def get_file_icon(file_type):
 
 def create_upload_folder():
     """업로드 폴더 생성"""
-    # 절대 경로로 업로드 폴더 생성
-    current_dir = os.path.dirname(os.path.abspath(__file__))
+    # 절대 경로로 업로드 폴더 생성 (포터블 버전 대응)
+    import sys
+    if getattr(sys, 'frozen', False):
+        # PyInstaller로 빌드된 경우
+        current_dir = os.path.dirname(sys.executable)
+    else:
+        # 일반 Python 실행의 경우
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+    
     upload_path = os.path.join(current_dir, UPLOAD_FOLDER)
     
     if not os.path.exists(upload_path):
@@ -110,8 +117,15 @@ def save_file(file, filename):
     # 타입별 폴더 결정
     folder = type_folders.get(file_type, 'documents')
     
-    # 파일 경로 설정 (절대 경로 사용)
-    current_dir = os.path.dirname(os.path.abspath(__file__))
+    # 파일 경로 설정 (포터블 버전 대응)
+    import sys
+    if getattr(sys, 'frozen', False):
+        # PyInstaller로 빌드된 경우
+        current_dir = os.path.dirname(sys.executable)
+    else:
+        # 일반 Python 실행의 경우
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+    
     file_path = os.path.join(current_dir, UPLOAD_FOLDER, folder, unique_filename)
     print(f"저장 경로: {file_path}")
     print(f"현재 디렉터리: {current_dir}")
@@ -160,6 +174,16 @@ def save_file(file, filename):
     elif file_type == 'audio':
         mime_type = 'audio/mpeg'
     
+    # 이미지 파일인 경우 썸네일 생성
+    thumbnail_path = None
+    if file_type == 'image':
+        try:
+            thumbnail_path = create_thumbnail(file_path, unique_filename)
+            print(f"썸네일 생성 결과: {thumbnail_path}")
+        except Exception as e:
+            print(f"썸네일 생성 실패: {e}")
+            thumbnail_path = None
+    
     # 파일 정보 반환
     file_info = {
         'original_name': filename,
@@ -169,7 +193,7 @@ def save_file(file, filename):
         'file_size': os.path.getsize(file_path),
         'mime_type': mime_type,
         'upload_time': datetime.now().isoformat(),
-        'thumbnail_path': None  # 임시로 썸네일 비활성화
+        'thumbnail_path': thumbnail_path
     }
     
     print(f"반환할 파일 정보: {file_info}")

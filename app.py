@@ -423,8 +423,14 @@ def download_file(filename):
         
         folder = type_folders.get(file_ext, 'documents')
         
-        # 절대 경로로 파일 찾기
-        current_dir = os.path.dirname(os.path.abspath(__file__))
+        # 절대 경로로 파일 찾기 (포터블 버전 대응)
+        if getattr(sys, 'frozen', False):
+            # PyInstaller로 빌드된 경우
+            current_dir = os.path.dirname(sys.executable)
+        else:
+            # 일반 Python 실행의 경우
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+        
         file_path = os.path.join(current_dir, 'uploads', folder, filename)
         
         if not os.path.exists(file_path):
