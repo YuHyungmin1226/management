@@ -155,21 +155,17 @@
                             </div>
                         {% else %}
                             <div class="url-preview">
-                                <div class="row">
-                                    {% if preview.image_url %}
-                                    <div class="col-md-3">
-                                        <img src="{{ preview.image_url }}" class="img-fluid rounded" alt="{{ preview.title }}">
-                                    </div>
-                                    <div class="col-md-9">
-                                    {% else %}
-                                    <div class="col-12">
+                                {% if preview.image_url %}
+                                <div class="mb-3">
+                                    <img src="{{ preview.image_url }}" class="img-fluid rounded" alt="{{ preview.title }}" style="max-width: 300px; max-height: 200px; object-fit: cover;">
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <h6><a href="{{ preview.url }}" target="_blank">{{ preview.title }}</a></h6>
+                                    {% if preview.description %}
+                                        <p class="text-muted small">{{ preview.description }}</p>
                                     {% endif %}
-                                        <h6><a href="{{ preview.url }}" target="_blank">{{ preview.title }}</a></h6>
-                                        {% if preview.description %}
-                                            <p class="text-muted small">{{ preview.description }}</p>
-                                        {% endif %}
-                                        <small class="text-muted">{{ preview.site_name }}</small>
-                                    </div>
+                                    <small class="text-muted">{{ preview.site_name }}</small>
                                 </div>
                             </div>
                         {% endif %}
