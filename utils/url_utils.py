@@ -77,6 +77,7 @@ class URLPreviewGenerator:
                 
                 return {
                     'type': 'youtube',
+                    'url': f"https://www.youtube.com/watch?v={video_id}",
                     'video_id': video_id,
                     'title': data.get('title', ''),
                     'author_name': data.get('author_name', ''),

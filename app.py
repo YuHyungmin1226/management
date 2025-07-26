@@ -211,11 +211,18 @@ def new_post():
         
         # URL 미리보기 생성
         urls = url_preview_generator.extract_urls(content)
+        print(f"추출된 URL들: {urls}")
         url_previews = []
         for url in urls:
+            print(f"URL 미리보기 처리 중: {url}")
             preview = url_preview_generator.get_url_preview(url)
             if preview:
+                print(f"미리보기 생성 성공: {preview}")
                 url_previews.append(preview)
+            else:
+                print(f"미리보기 생성 실패: {url}")
+        
+        print(f"최종 URL 미리보기: {url_previews}")
         
         # 파일 업로드 처리
         uploaded_files = []
