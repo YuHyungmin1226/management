@@ -287,13 +287,46 @@ def validate_file(file):
     return errors
 
 def delete_file(file_path):
-    """파일 삭제"""
+    """파일 삭제 (안전한 방법)"""
     try:
         if os.path.exists(file_path):
-            os.remove(file_path)
-            return True
+            # Windows에서 파일이 사용 중일 때를 대비한 안전한 삭제
+            import time
+            max_retries = 3
+            retry_delay = 0.5  # 0.5초 대기
+            
+            for attempt in range(max_retries):
+                try:
+                    os.remove(file_path)
+                    print(f"✅ 파일 삭제 성공: {file_path}")
+                    return True
+                except PermissionError as pe:
+                    if "다른 프로세스가 사용 중" in str(pe) or "being used by another process" in str(pe):
+                        print(f"⚠️ 파일이 사용 중입니다. 재시도 {attempt + 1}/{max_retries}: {file_path}")
+                        if attempt < max_retries - 1:
+                            time.sleep(retry_delay)
+                            continue
+                        else:
+                            print(f"❌ 파일 삭제 실패 (최대 재시도 초과): {file_path}")
+                            return False
+                    else:
+                        raise
+                except OSError as ose:
+                    if "다른 프로세스가 사용 중" in str(ose) or "being used by another process" in str(ose):
+                        print(f"⚠️ 파일이 사용 중입니다. 재시도 {attempt + 1}/{max_retries}: {file_path}")
+                        if attempt < max_retries - 1:
+                            time.sleep(retry_delay)
+                            continue
+                        else:
+                            print(f"❌ 파일 삭제 실패 (최대 재시도 초과): {file_path}")
+                            return False
+                    else:
+                        raise
+        else:
+            print(f"⚠️ 파일이 존재하지 않음: {file_path}")
+            return True  # 파일이 없으면 삭제 성공으로 간주
     except Exception as e:
-        print(f"파일 삭제 오류: {e}")
+        print(f"❌ 파일 삭제 오류: {file_path} - {e}")
         return False
 
 def get_file_info_from_json(files_json):
