@@ -1,4 +1,5 @@
 import os
+import sys
 import uuid
 from datetime import datetime
 from werkzeug.utils import secure_filename
@@ -215,9 +216,16 @@ def create_thumbnail(image_path, filename):
             # 썸네일 생성
             img.thumbnail(THUMBNAIL_SIZE, Image.Resampling.LANCZOS)
             
-            # 썸네일 저장
+            # 썸네일 저장 (포터블 버전 대응)
             thumbnail_name = f"thumb_{filename}"
-            thumbnail_path = os.path.join(UPLOAD_FOLDER, 'images', thumbnail_name)
+            if getattr(sys, 'frozen', False):
+                # PyInstaller로 빌드된 경우
+                current_dir = os.path.dirname(sys.executable)
+            else:
+                # 일반 Python 실행의 경우
+                current_dir = os.path.dirname(os.path.abspath(__file__))
+            
+            thumbnail_path = os.path.join(current_dir, UPLOAD_FOLDER, 'images', thumbnail_name)
             img.save(thumbnail_path, 'JPEG', quality=85)
             
             return thumbnail_path
