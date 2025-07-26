@@ -1,11 +1,18 @@
 import os
 import sys
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from werkzeug.utils import secure_filename
 from PIL import Image
 import filetype
 import json
+
+# 한국 시간대 설정
+KST = timezone(timedelta(hours=9))
+
+def get_korean_time():
+    """한국 시간 반환"""
+    return datetime.now(KST)
 
 # 파일 업로드 설정
 UPLOAD_FOLDER = 'uploads'
@@ -84,7 +91,7 @@ def generate_unique_filename(original_filename):
     """고유한 파일명 생성"""
     ext = original_filename.rsplit('.', 1)[1].lower() if '.' in original_filename else ''
     unique_id = str(uuid.uuid4())
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    timestamp = get_korean_time().strftime('%Y%m%d_%H%M%S')
     
     if ext:
         return f"{timestamp}_{unique_id}.{ext}"
@@ -193,7 +200,7 @@ def save_file(file, filename):
         'file_type': file_type,
         'file_size': os.path.getsize(file_path),
         'mime_type': mime_type,
-        'upload_time': datetime.now().isoformat(),
+        'upload_time': get_korean_time().isoformat(),
         'thumbnail_path': thumbnail_path
     }
     

@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import os
 import sys
 import uuid
@@ -44,12 +44,35 @@ def from_json_filter(value):
             return []
     return value
 
+@app.template_filter('korean_time')
+def korean_time_filter(dt):
+    """한국 시간으로 포맷팅하는 필터"""
+    if dt is None:
+        return ""
+    
+    # UTC 시간을 한국 시간으로 변환 (이미 한국 시간이면 그대로 사용)
+    if dt.tzinfo is None:
+        # timezone 정보가 없으면 한국 시간으로 가정
+        korean_dt = dt.replace(tzinfo=KST)
+    else:
+        # UTC 시간을 한국 시간으로 변환
+        korean_dt = dt.astimezone(KST)
+    
+    return korean_dt.strftime('%Y-%m-%d %H:%M')
+
+# 한국 시간대 설정
+KST = timezone(timedelta(hours=9))
+
+def get_korean_time():
+    """한국 시간 반환"""
+    return datetime.now(KST)
+
 # 데이터베이스 모델
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(120), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=get_korean_time)
     last_login = db.Column(db.DateTime)
     login_attempts = db.Column(db.Integer, default=0)
     locked_until = db.Column(db.DateTime)
@@ -62,8 +85,8 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=get_korean_time)
+    updated_at = db.Column(db.DateTime, default=get_korean_time, onupdate=get_korean_time)
     is_public = db.Column(db.Boolean, default=True)
     url_previews = db.Column(db.Text, default='[]')  # JSON 문자열로 저장
     files = db.Column(db.Text, default='[]')  # JSON 문자열로 저장
@@ -75,7 +98,7 @@ class Comment(db.Model):
     content = db.Column(db.Text, nullable=False)
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=get_korean_time)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -88,7 +111,7 @@ def is_account_locked(user):
     return False
 
 def lock_account(user, minutes=15):
-    user.locked_until = datetime.utcnow() + timedelta(minutes=minutes)
+    user.locked_until = get_korean_time() + timedelta(minutes=minutes)
     user.login_attempts = 0
     db.session.commit()
 
@@ -123,7 +146,7 @@ def login():
         
         if check_password_hash(user.password_hash, password):
             reset_login_attempts(user)
-            user.last_login = datetime.utcnow()
+            user.last_login = get_korean_time()
             db.session.commit()
             login_user(user)
             

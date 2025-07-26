@@ -22,7 +22,7 @@
                             <i class="bi bi-person-circle"></i> {{ post.author.username }}
                         </h6>
                         <small class="text-muted">
-                            <i class="bi bi-clock"></i> {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
+                            <i class="bi bi-clock"></i> {{ post.created_at|korean_time }}
                         </small>
                     </div>
                     <div>
