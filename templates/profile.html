@@ -51,7 +51,105 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div class="flex-grow-1">
-                                    <div class="post-content">{{ post.content[:100] }}{% if post.content|length > 100 %}...{% endif %}</div>
+                                    <div class="post-content">{{ post.content }}</div>
+                                    
+                                    <!-- 파일 첨부 -->
+                                    {% if post.files %}
+                                        {% set files = post.files|from_json %}
+                                        {% if files %}
+                                            <div class="attached-files mt-3">
+                                                <h6><i class="bi bi-paperclip"></i> 첨부파일 ({{ files|length }}개)</h6>
+                                                <div class="row">
+                                                    {% for file in files %}
+                                                    <div class="col-12 mb-2">
+                                                        <div class="file-item border rounded p-2">
+                                                            <div class="d-flex align-items-center mb-2">
+                                                                <i class="bi {{ 'bi-image' if file.file_type == 'image' else 'bi-file-text' if file.file_type == 'document' else 'bi-camera-video' if file.file_type == 'video' else 'bi-music-note' if file.file_type == 'audio' else 'bi-archive' if file.file_type == 'archive' else 'bi-file-earmark' }} me-2"></i>
+                                                                <div class="flex-grow-1">
+                                                                    <div class="fw-bold small">
+                                                                        {% if file.file_type == 'image' %}
+                                                                            이미지 파일
+                                                                        {% elif file.file_type == 'video' %}
+                                                                            비디오 파일
+                                                                        {% elif file.file_type == 'audio' %}
+                                                                            오디오 파일
+                                                                        {% elif file.file_type == 'document' %}
+                                                                            문서 파일
+                                                                        {% elif file.file_type == 'archive' %}
+                                                                            압축 파일
+                                                                        {% else %}
+                                                                            첨부 파일
+                                                                        {% endif %}
+                                                                    </div>
+                                                                    <small class="text-muted">
+                                                                        {% if file.file_size < 1024 %}
+                                                                            {{ file.file_size }} B
+                                                                        {% elif file.file_size < 1024 * 1024 %}
+                                                                            {{ (file.file_size / 1024)|round(1) }} KB
+                                                                        {% else %}
+                                                                            {{ (file.file_size / 1024 / 1024)|round(1) }} MB
+                                                                        {% endif %}
+                                                                    </small>
+                                                                </div>
+                                                                <a href="{{ url_for('download_file', filename=file.saved_name) }}" class="btn btn-sm btn-outline-primary">
+                                                                    <i class="bi bi-download"></i>
+                                                                </a>
+                                                            </div>
+                                                            
+                                                            <!-- 이미지 미리보기 (작은 크기) -->
+                                                            {% if file.file_type == 'image' %}
+                                                            <div class="mt-2">
+                                                                <img src="{{ url_for('download_file', filename=file.saved_name) }}" 
+                                                                     class="img-fluid rounded" 
+                                                                     alt="{{ file.original_name }}"
+                                                                     style="cursor: pointer; max-width: 200px; max-height: 150px; object-fit: cover;"
+                                                                     onclick="openImageModal('{{ url_for('download_file', filename=file.saved_name) }}', '{{ file.original_name }}')">
+                                                            </div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                    
+                                    <!-- URL 미리보기 -->
+                                    {% if post.url_previews %}
+                                        {% set url_previews = post.url_previews|from_json %}
+                                        <div class="url-previews-container">
+                                            {% for preview in url_previews %}
+                                                {% if preview.type == 'youtube' %}
+                                                    <div class="youtube-preview mb-3">
+                                                        <img src="{{ preview.thumbnail_url }}" alt="{{ preview.title }}">
+                                                        <button class="play-button" onclick="window.open('{{ preview.url }}', '_blank')">
+                                                            <i class="bi bi-play-fill"></i>
+                                                        </button>
+                                                        <div class="mt-2">
+                                                            <h6>{{ preview.title }}</h6>
+                                                            <small class="text-muted">{{ preview.author_name }}</small>
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="url-preview mb-3">
+                                                        {% if preview.image_url %}
+                                                        <div class="mb-3">
+                                                            <img src="{{ preview.image_url }}" class="img-fluid rounded" alt="{{ preview.title }}" style="max-width: 200px; max-height: 150px; object-fit: cover;">
+                                                        </div>
+                                                        {% endif %}
+                                                        <div>
+                                                            <h6><a href="{{ preview.url }}" target="_blank">{{ preview.title }}</a></h6>
+                                                            {% if preview.description %}
+                                                                <p class="text-muted small">{{ preview.description }}</p>
+                                                            {% endif %}
+                                                            <small class="text-muted">{{ preview.site_name }}</small>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    
                                     <small class="text-muted">
                                         <i class="bi bi-clock"></i> {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
                                         {% if not post.is_public %}
@@ -87,4 +185,45 @@
         </div>
     </div>
 </div>
+
+<!-- 이미지 모달 -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">이미지 미리보기</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" class="img-fluid" alt="">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                <a id="downloadLink" href="" class="btn btn-primary" download>
+                    <i class="bi bi-download"></i> 다운로드
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 이미지 모달 열기 함수
+function openImageModal(imageSrc, imageName) {
+    const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+    const modalImage = document.getElementById('modalImage');
+    const downloadLink = document.getElementById('downloadLink');
+    const modalTitle = document.getElementById('imageModalLabel');
+    
+    modalImage.src = imageSrc;
+    modalImage.alt = imageName;
+    downloadLink.href = imageSrc;
+    downloadLink.download = imageName;
+    modalTitle.textContent = imageName;
+    
+    modal.show();
+}
+</script>
 {% endblock %} 
