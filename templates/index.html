@@ -127,29 +127,27 @@
                     <!-- URL 미리보기 -->
                     {% if post.url_previews %}
                         {% set url_previews = post.url_previews|from_json %}
-                        {% for preview in url_previews %}
-                            {% if preview.type == 'youtube' %}
-                                <div class="youtube-preview">
-                                    <img src="{{ preview.thumbnail_url }}" alt="{{ preview.title }}">
-                                    <button class="play-button" onclick="window.open('{{ preview.url }}', '_blank')">
-                                        <i class="bi bi-play-fill"></i>
-                                    </button>
-                                    <div class="mt-2">
-                                        <h6>{{ preview.title }}</h6>
-                                        <small class="text-muted">{{ preview.author_name }}</small>
-                                    </div>
-                                </div>
-                            {% else %}
-                                <div class="url-preview">
-                                    <div class="row">
-                                        {% if preview.image_url %}
-                                        <div class="col-md-3">
-                                            <img src="{{ preview.image_url }}" class="img-fluid rounded" alt="{{ preview.title }}">
+                        <div class="url-previews-container">
+                            {% for preview in url_previews %}
+                                {% if preview.type == 'youtube' %}
+                                    <div class="youtube-preview mb-3">
+                                        <img src="{{ preview.thumbnail_url }}" alt="{{ preview.title }}">
+                                        <button class="play-button" onclick="window.open('{{ preview.url }}', '_blank')">
+                                            <i class="bi bi-play-fill"></i>
+                                        </button>
+                                        <div class="mt-2">
+                                            <h6>{{ preview.title }}</h6>
+                                            <small class="text-muted">{{ preview.author_name }}</small>
                                         </div>
-                                        <div class="col-md-9">
-                                        {% else %}
-                                        <div class="col-12">
+                                    </div>
+                                {% else %}
+                                    <div class="url-preview mb-3">
+                                        {% if preview.image_url %}
+                                        <div class="mb-3">
+                                            <img src="{{ preview.image_url }}" class="img-fluid rounded" alt="{{ preview.title }}" style="max-width: 300px; max-height: 200px; object-fit: cover;">
+                                        </div>
                                         {% endif %}
+                                        <div>
                                             <h6><a href="{{ preview.url }}" target="_blank">{{ preview.title }}</a></h6>
                                             {% if preview.description %}
                                                 <p class="text-muted small">{{ preview.description }}</p>
@@ -157,9 +155,9 @@
                                             <small class="text-muted">{{ preview.site_name }}</small>
                                         </div>
                                     </div>
-                                </div>
-                            {% endif %}
-                        {% endfor %}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
                     {% endif %}
                     
                     <!-- 댓글 수 -->
