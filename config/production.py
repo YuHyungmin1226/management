@@ -23,6 +23,15 @@ if __name__ == '__main__':
     # 데이터베이스 초기화
     with app.app_context():
         print("🗄️  데이터베이스 테이블을 생성합니다...")
+        
+        # 데이터베이스 경로 출력 (디버깅용)
+        if getattr(sys, 'frozen', False):
+            current_dir = os.path.dirname(sys.executable)
+        else:
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+        db_path = os.path.join(current_dir, 'sns.db')
+        print(f"📁 데이터베이스 경로: {db_path}")
+        
         db.create_all()
         
         # 기본 관리자 계정 생성
