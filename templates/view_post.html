@@ -93,7 +93,8 @@
                                              class="img-fluid rounded" 
                                              alt="{{ file.original_name }}"
                                              style="cursor: pointer; max-width: 300px; max-height: 300px; object-fit: cover;"
-                                             onclick="openImageModal('{{ url_for('download_file', filename=file.saved_name) }}', '{{ file.original_name }}')"
+                                             data-image-url="{{ url_for('download_file', filename=file.saved_name) }}"
+                                             data-image-name="{{ file.original_name }}"
                                              onerror="console.log('이미지 로드 실패:', this.src);"
                                              onload="console.log('이미지 로드 성공:', this.src);">
                                         <div class="mt-2">
@@ -272,6 +273,17 @@ function openImageModal(imageSrc, imageName) {
     
     modal.show();
 }
+
+// 이미지 클릭 이벤트 처리
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('img[data-image-url]').forEach(function(img) {
+        img.addEventListener('click', function() {
+            const imageUrl = this.getAttribute('data-image-url');
+            const imageName = this.getAttribute('data-image-name');
+            openImageModal(imageUrl, imageName);
+        });
+    });
+});
 
 // 비디오/오디오 컨트롤 최적화
 document.addEventListener('DOMContentLoaded', function() {

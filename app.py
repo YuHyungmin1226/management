@@ -319,7 +319,13 @@ def delete_post(post_id):
             print(f"게시글 파일 정보: {post.files}")
             files = get_file_info_from_json(post.files)
             print(f"파싱된 파일 정보: {files}")
-            current_dir = os.path.dirname(os.path.abspath(__file__))
+            # 포터블 버전 대응
+            if getattr(sys, 'frozen', False):
+                # PyInstaller로 빌드된 경우
+                current_dir = os.path.dirname(sys.executable)
+            else:
+                # 일반 Python 실행의 경우
+                current_dir = os.path.dirname(os.path.abspath(__file__))
             print(f"현재 디렉터리: {current_dir}")
             
             for file_info in files:
@@ -354,7 +360,12 @@ def delete_post(post_id):
                     
                     # 썸네일도 삭제 (있는 경우)
                     if 'thumbnail_path' in file_info and file_info['thumbnail_path']:
-                        thumbnail_path = os.path.join(current_dir, file_info['thumbnail_path'])
+                        # 썸네일 경로가 절대 경로인지 상대 경로인지 확인
+                        if os.path.isabs(file_info['thumbnail_path']):
+                            thumbnail_path = file_info['thumbnail_path']
+                        else:
+                            thumbnail_path = os.path.join(current_dir, file_info['thumbnail_path'])
+                        
                         if os.path.exists(thumbnail_path):
                             try:
                                 os.remove(thumbnail_path)
@@ -362,6 +373,8 @@ def delete_post(post_id):
                                 print(f"썸네일 삭제됨: {thumbnail_path}")
                             except Exception as thumb_error:
                                 print(f"썸네일 삭제 실패: {thumbnail_path} - {thumb_error}")
+                        else:
+                            print(f"썸네일 파일이 존재하지 않음: {thumbnail_path}")
         else:
             print("게시글에 첨부된 파일이 없습니다.")
     except Exception as e:
