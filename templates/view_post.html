@@ -133,25 +133,18 @@
                 
                 <!-- URL 미리보기 -->
                 {% if url_previews %}
-                    <div class="mb-3">
-                        <small class="text-muted">디버그: URL 미리보기 {{ url_previews|length }}개</small>
-                    </div>
                     <div class="url-previews-container">
                         {% for preview in url_previews %}
                             {% if preview.type == 'youtube' %}
                                 <div class="youtube-preview mb-3">
-                                    <img src="{{ preview.thumbnail_url }}" alt="{{ preview.title }}" 
-                                         onerror="console.log('YouTube 썸네일 로드 실패:', this.src);"
-                                         onload="console.log('YouTube 썸네일 로드 성공:', this.src);">
+                                    <img src="{{ preview.thumbnail_url }}" alt="{{ preview.title }}">
                                     <button class="play-button" onclick="window.open('{{ preview.url }}', '_blank')">
                                         <i class="bi bi-play-fill"></i>
                                     </button>
                                     <div class="mt-2">
                                         <h6>{{ preview.title }}</h6>
                                         <small class="text-muted">{{ preview.author_name }}</small>
-                                        <div class="mt-1">
-                                            <small class="text-muted">디버그: URL={{ preview.url }}, ID={{ preview.video_id }}</small>
-                                        </div>
+
                                     </div>
                                 </div>
                             {% else %}
