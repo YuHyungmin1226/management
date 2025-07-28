@@ -36,6 +36,8 @@ MANIFEST
 # PyInstaller
 *.manifest
 *.spec
+*.exe
+FlaskSNS_Portable/
 
 # 환경 변수
 .env
