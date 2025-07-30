@@ -27,7 +27,16 @@ def build_portable():
     # 현재 디렉터리
     current_dir = os.path.dirname(os.path.abspath(__file__))
     
-    # 빌드 명령어 구성
+    # 현재 디렉터리 경로
+    current_dir = os.path.abspath(".")
+    templates_path = os.path.join(current_dir, "templates")
+    utils_path = os.path.join(current_dir, "utils")
+    
+    print(f"📁 현재 디렉터리: {current_dir}")
+    print(f"📁 템플릿 경로: {templates_path}")
+    print(f"📁 유틸리티 경로: {utils_path}")
+    
+    # 빌드 명령어 구성 (수정된 버전)
     cmd = [
         'pyinstaller',
         '--onefile',                    # 단일 실행 파일
@@ -36,8 +45,8 @@ def build_portable():
         '--distpath=portable_build',    # 출력 디렉터리
         '--workpath=build_temp',        # 작업 디렉터리
         '--specpath=build_temp',        # spec 파일 위치
-        f'--add-data={os.path.join(current_dir, "templates")};templates',  # 템플릿
-        f'--add-data={os.path.join(current_dir, "utils")};utils',          # 유틸리티
+        f'--add-data={templates_path};templates',  # 템플릿 (절대 경로)
+        f'--add-data={utils_path};utils',          # 유틸리티 (절대 경로)
         '--hidden-import=flask',
         '--hidden-import=flask_sqlalchemy',
         '--hidden-import=flask_login',
@@ -48,6 +57,10 @@ def build_portable():
         '--hidden-import=bs4',
         '--hidden-import=PIL',
         '--hidden-import=filetype',
+        '--hidden-import=jinja2.ext',
+        '--hidden-import=jinja2.loaders',
+        '--hidden-import=jinja2.environment',
+        '--hidden-import=jinja2.templating',
         'FlaskSNS.py'                   # 메인 스크립트
     ]
     
