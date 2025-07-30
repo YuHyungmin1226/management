@@ -105,7 +105,7 @@ FlaskSNS/
 pip install -r requirements.txt
 ```
 
-### 주요 패키지 (2025년 1월 기준)
+### 주요 패키지 (2025년 7월 기준)
 - **Flask 2.3.3** - 웹 프레임워크
 - **Flask-SQLAlchemy 3.0.5** - 데이터베이스 ORM
 - **Flask-Login 0.6.3** - 사용자 인증
@@ -154,7 +154,7 @@ pip install -r requirements.txt
 
 ## 🌟 새로운 기능
 
-### v2.0 업데이트 (2025년 1월)
+### v2.0 업데이트 (2025년 7월)
 - ✅ Python 3.13 호환성 개선
 - ✅ Pillow 11.3.0 업데이트
 - ✅ filetype 패키지 추가로 파일 타입 감지 개선
