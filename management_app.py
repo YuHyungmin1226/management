@@ -127,15 +127,15 @@ def add_evaluation(student_id):
             return render_template('add_evaluation.html', student=student, today=datetime.utcnow().date())
 
         try:
-            score = float(score)
+            score = int(score)
             evaluation_date = datetime.strptime(evaluation_date_str, '%Y-%m-%d').date()
         except ValueError:
             flash('점수 또는 날짜 형식이 올바르지 않습니다.', 'error')
             return render_template('add_evaluation.html', student=student, today=datetime.utcnow().date())
 
-        # 점수 범위 검증
-        if score < 0 or score > 100:
-            flash('점수는 0에서 100 사이여야 합니다.', 'error')
+        # 점수 범위 검증 (-5 ~ +5)
+        if score < -5 or score > 5:
+            flash('점수는 -5에서 5 사이여야 합니다.', 'error')
             return render_template('add_evaluation.html', student=student, today=datetime.utcnow().date())
 
         new_evaluation = Evaluation(

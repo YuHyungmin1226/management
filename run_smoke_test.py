@@ -55,11 +55,11 @@ def main():
         if r.status_code != 200:
             failures.append(f"[view_student] status {r.status_code}")
 
-        # 5) 평가 추가 성공
+        # 5) 평가 추가 성공 (-5~5 정수)
         today = datetime.utcnow().strftime('%Y-%m-%d')
         r = client.post(f'/student/{s1.id}/evaluation/new', data={
             'subject': '수학',
-            'score': '95',
+            'score': '3',
             'evaluation_date': today,
             'notes': '잘함'
         }, follow_redirects=True)
@@ -68,11 +68,11 @@ def main():
         # 6) 점수 범위 오류
         r = client.post(f'/student/{s1.id}/evaluation/new', data={
             'subject': '국어',
-            'score': '105',
+            'score': '6',
             'evaluation_date': today,
             'notes': ''
         }, follow_redirects=True)
-        assert_in('점수는 0에서 100 사이여야 합니다.', r.get_data(as_text=True), 'score_range', failures)
+        assert_in('점수는 -5에서 5 사이여야 합니다.', r.get_data(as_text=True), 'score_range', failures)
 
         # 7) 평가 삭제
         ev = Evaluation.query.filter_by(student_id=s1.id).first()
