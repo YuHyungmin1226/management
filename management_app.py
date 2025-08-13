@@ -6,9 +6,14 @@ import csv
 import io
 import os
 import sys
+from flask_wtf import CSRFProtect
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = False
 
 # 포터블 버전 대응 - 데이터베이스 경로 설정
 if getattr(sys, 'frozen', False):
@@ -23,6 +28,13 @@ app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+csrf = CSRFProtect(app)
+limiter = Limiter(get_remote_address, app=app, default_limits=["200 per day", "50 per hour"])
+
+@app.context_processor
+def inject_csrf_token():
+    from flask_wtf.csrf import generate_csrf
+    return dict(csrf_token=generate_csrf)
 
 # 데이터베이스 모델
 class Student(db.Model):
@@ -64,6 +76,7 @@ def index():
     return render_template('index.html', students=students, q=query)
 
 @app.route('/student/new', methods=['GET', 'POST'])
+@limiter.limit("20/hour")
 def add_student():
     if request.method == 'POST':
         student_number = request.form.get('student_number')
@@ -91,6 +104,7 @@ def view_student(student_id):
     return render_template('view_student.html', student=student)
 
 @app.route('/student/<int:student_id>/edit', methods=['GET', 'POST'])
+@limiter.limit("30/hour")
 def edit_student(student_id):
     student = Student.query.get_or_404(student_id)
     if request.method == 'POST':
@@ -119,6 +133,7 @@ def edit_student(student_id):
     return render_template('edit_student.html', student=student)
 
 @app.route('/student/<int:student_id>/delete', methods=['POST'])
+@limiter.limit("30/hour")
 def delete_student(student_id):
     student = Student.query.get_or_404(student_id)
     db.session.delete(student)
@@ -127,6 +142,7 @@ def delete_student(student_id):
     return redirect(url_for('index'))
 
 @app.route('/student/<int:student_id>/evaluation/new', methods=['GET', 'POST'])
+@limiter.limit("60/hour")
 def add_evaluation(student_id):
     student = Student.query.get_or_404(student_id)
     if request.method == 'POST':
@@ -165,6 +181,7 @@ def add_evaluation(student_id):
     return render_template('add_evaluation.html', student=student, today=datetime.utcnow().date())
 
 @app.route('/evaluation/<int:evaluation_id>/delete', methods=['POST'])
+@limiter.limit("60/hour")
 def delete_evaluation(evaluation_id):
     evaluation = Evaluation.query.get_or_404(evaluation_id)
     student_id = evaluation.student_id

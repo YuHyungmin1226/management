@@ -15,6 +15,8 @@ def main():
     # 테스트 설정: 인메모리 DB 사용
     app.config['TESTING'] = True
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    app.config['WTF_CSRF_ENABLED'] = False
+    app.config['RATELIMIT_ENABLED'] = False
 
     with app.app_context():
         db.drop_all()
