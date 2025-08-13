@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
+from sqlalchemy import or_
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import os
@@ -47,8 +48,18 @@ def format_date_filter(value, format='%Y-%m-%d'):
 
 @app.route('/')
 def index():
-    students = Student.query.order_by(Student.student_number).all()
-    return render_template('index.html', students=students)
+    query = request.args.get('q', '').strip()
+    students_query = Student.query
+    if query:
+        like = f"%{query}%"
+        students_query = students_query.filter(
+            or_(
+                Student.student_number.like(like),
+                Student.name.like(like)
+            )
+        )
+    students = students_query.order_by(Student.student_number).all()
+    return render_template('index.html', students=students, q=query)
 
 @app.route('/student/new', methods=['GET', 'POST'])
 def add_student():

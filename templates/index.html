@@ -5,7 +5,20 @@
 {% block content %}
 <div class="container">
     <h1 class="mb-4">학생 목록</h1>
-    <a href="{{ url_for('add_student') }}" class="btn btn-primary mb-3">새 학생 추가</a>
+    <form class="row g-2 mb-3" method="get" action="{{ url_for('index') }}">
+        <div class="col-sm-8 col-md-6 col-lg-4">
+            <input type="text" class="form-control" name="q" placeholder="학번 또는 이름으로 검색" value="{{ q or '' }}">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-outline-primary">검색</button>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">초기화</a>
+        </div>
+        <div class="col-auto ms-auto">
+            <a href="{{ url_for('add_student') }}" class="btn btn-primary">새 학생 추가</a>
+        </div>
+    </form>
 
     {% if students %}
     <div class="table-responsive">
@@ -39,7 +52,7 @@
         </table>
     </div>
     {% else %}
-    <p>등록된 학생이 없습니다.</p>
+    <p>검색 결과가 없습니다.</p>
     {% endif %}
 </div>
 {% endblock %}

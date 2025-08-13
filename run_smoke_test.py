@@ -37,6 +37,18 @@ def main():
             failures.append(f"[add_student] status {r.status_code}")
         assert_in('학생이 성공적으로 추가되었습니다.', r.get_data(as_text=True), 'add_student', failures)
 
+        # 검색: 이름으로
+        r = client.get('/?q=%ED%99%8D%EA%B8%B8%EB%8F%99')
+        if r.status_code != 200:
+            failures.append(f"[search_name] status {r.status_code}")
+        assert_in('홍길동', r.get_data(as_text=True), 'search_name', failures)
+
+        # 검색: 학번으로
+        r = client.get('/?q=S001')
+        if r.status_code != 200:
+            failures.append(f"[search_number] status {r.status_code}")
+        assert_in('S001', r.get_data(as_text=True), 'search_number', failures)
+
         # 3) 학생 추가 중복 오류
         r = client.post('/student/new', data={
             'student_number': 'S001',
