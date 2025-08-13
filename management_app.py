@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, make_response
 from sqlalchemy import or_
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, date
 import csv
 import io
 import os
@@ -153,19 +153,19 @@ def add_evaluation(student_id):
 
         if not subject or not score or not evaluation_date_str:
             flash('과목, 점수, 평가일을 모두 입력해주세요.', 'error')
-            return render_template('add_evaluation.html', student=student, today=datetime.utcnow().date())
+            return render_template('add_evaluation.html', student=student, today=date.today())
 
         try:
             score = int(score)
             evaluation_date = datetime.strptime(evaluation_date_str, '%Y-%m-%d').date()
         except ValueError:
             flash('점수 또는 날짜 형식이 올바르지 않습니다.', 'error')
-            return render_template('add_evaluation.html', student=student, today=datetime.utcnow().date())
+            return render_template('add_evaluation.html', student=student, today=date.today())
 
         # 점수 범위 검증 (-5 ~ +5)
         if score < -5 or score > 5:
             flash('점수는 -5에서 5 사이여야 합니다.', 'error')
-            return render_template('add_evaluation.html', student=student, today=datetime.utcnow().date())
+            return render_template('add_evaluation.html', student=student, today=date.today())
 
         new_evaluation = Evaluation(
             subject=subject,
@@ -178,7 +178,7 @@ def add_evaluation(student_id):
         db.session.commit()
         flash('평가가 성공적으로 추가되었습니다.', 'success')
         return redirect(url_for('view_student', student_id=student_id))
-    return render_template('add_evaluation.html', student=student, today=datetime.utcnow().date())
+    return render_template('add_evaluation.html', student=student, today=date.today())
 
 @app.route('/evaluation/<int:evaluation_id>/delete', methods=['POST'])
 @limiter.limit("60/hour")

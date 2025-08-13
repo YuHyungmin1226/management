@@ -1,5 +1,5 @@
 import sys
-from datetime import datetime
+from datetime import datetime, UTC
 
 from management_app import app, db, Student, Evaluation
 
@@ -85,7 +85,7 @@ def main():
             failures.append(f"[view_student] status {r.status_code}")
 
         # 5) 평가 추가 성공 (-5~5 정수)
-        today = datetime.utcnow().strftime('%Y-%m-%d')
+        today = datetime.now(UTC).strftime('%Y-%m-%d')
         r = client.post(f'/student/{s1.id}/evaluation/new', data={
             'subject': '수학',
             'score': '3',
