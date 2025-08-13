@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}새 학생 추가{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">새 학생 추가</h1>
+    <form action="{{ url_for('add_student') }}" method="POST">
+        <div class="mb-3">
+            <label for="student_number" class="form-label">학번</label>
+            <input type="text" class="form-control" id="student_number" name="student_number" required>
+        </div>
+        <div class="mb-3">
+            <label for="name" class="form-label">이름</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+        <button type="submit" class="btn btn-primary">학생 추가</button>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">취소</a>
+    </form>
+</div>
+{% endblock %}

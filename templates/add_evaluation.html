@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}{{ student.name }} 학생 평가 추가{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">{{ student.name }} 학생 평가 추가</h1>
+    <form action="{{ url_for('add_evaluation', student_id=student.id) }}" method="POST">
+        <div class="mb-3">
+            <label for="subject" class="form-label">과목</label>
+            <input type="text" class="form-control" id="subject" name="subject" required>
+        </div>
+        <div class="mb-3">
+            <label for="score" class="form-label">점수</label>
+            <input type="number" step="0.1" class="form-control" id="score" name="score" required>
+        </div>
+        <div class="mb-3">
+            <label for="evaluation_date" class="form-label">평가일</label>
+            <input type="date" class="form-control" id="evaluation_date" name="evaluation_date" value="{{ "now"|format_date("%Y-%m-%d") }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="notes" class="form-label">비고</label>
+            <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">평가 추가</button>
+        <a href="{{ url_for('view_student', student_id=student.id) }}" class="btn btn-secondary">취소</a>
+    </form>
+</div>
+{% endblock %}
