@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, make_response
 from sqlalchemy import or_
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+import csv
+import io
 import os
 import sys
 
@@ -170,6 +172,113 @@ def delete_evaluation(evaluation_id):
     db.session.commit()
     flash('평가가 성공적으로 삭제되었습니다.', 'success')
     return redirect(url_for('view_student', student_id=student_id))
+
+# 학생 CSV 일괄 등록
+@app.route('/students/import', methods=['GET', 'POST'])
+def import_students():
+    if request.method == 'POST':
+        file = request.files.get('file')
+        if not file or file.filename == '':
+            flash('CSV 파일을 선택해주세요.', 'error')
+            return redirect(url_for('import_students'))
+
+        try:
+            content = file.read().decode('utf-8-sig')
+            reader = csv.reader(io.StringIO(content))
+
+            rows = list(reader)
+            if not rows:
+                flash('CSV 파일이 비어 있습니다.', 'error')
+                return redirect(url_for('import_students'))
+
+            start_index = 0
+            header = [h.strip().lower() for h in rows[0]] if rows else []
+            if header and (header == ['student_number', 'name'] or header == ['학번', '이름']):
+                start_index = 1
+
+            total_count = 0
+            added_count = 0
+            skipped_count = 0
+
+            for row in rows[start_index:]:
+                total_count += 1
+                if len(row) < 2:
+                    skipped_count += 1
+                    continue
+                student_number = str(row[0]).strip()
+                name = str(row[1]).strip()
+                if not student_number or not name:
+                    skipped_count += 1
+                    continue
+                existing = Student.query.filter_by(student_number=student_number).first()
+                if existing:
+                    skipped_count += 1
+                    continue
+                db.session.add(Student(student_number=student_number, name=name))
+                added_count += 1
+
+            db.session.commit()
+            flash(f'CSV 처리 완료: 총 {total_count}건, 추가 {added_count}건, 건너뜀 {skipped_count}건', 'success')
+            return redirect(url_for('index'))
+        except UnicodeDecodeError:
+            flash('파일 인코딩을 확인해주세요. UTF-8 형식을 권장합니다.', 'error')
+            return redirect(url_for('import_students'))
+        except Exception as e:
+            flash(f'가져오기 중 오류가 발생했습니다: {str(e)}', 'error')
+            return redirect(url_for('import_students'))
+
+    return render_template('import_students.html')
+
+
+# 특정 학생 평가 CSV 내보내기
+@app.route('/student/<int:student_id>/evaluations/export')
+def export_student_evaluations(student_id):
+    student = Student.query.get_or_404(student_id)
+    output = io.StringIO(newline='')
+    writer = csv.writer(output)
+    writer.writerow(['student_number', 'name', 'subject', 'score', 'evaluation_date', 'notes'])
+    for ev in student.evaluations:
+        writer.writerow([
+            student.student_number,
+            student.name,
+            ev.subject or '',
+            ev.score if ev.score is not None else '',
+            ev.evaluation_date.strftime('%Y-%m-%d') if ev.evaluation_date else '',
+            ev.notes or ''
+        ])
+
+    csv_data = '\ufeff' + output.getvalue()
+    response = make_response(csv_data)
+    response.headers['Content-Type'] = 'text/csv; charset=utf-8'
+    filename = f"evaluations_{student.student_number}.csv"
+    response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+# 전체 평가 CSV 내보내기
+@app.route('/evaluations/export')
+def export_all_evaluations():
+    output = io.StringIO(newline='')
+    writer = csv.writer(output)
+    writer.writerow(['student_number', 'name', 'subject', 'score', 'evaluation_date', 'notes'])
+
+    students = Student.query.order_by(Student.student_number).all()
+    for student in students:
+        for ev in student.evaluations:
+            writer.writerow([
+                student.student_number,
+                student.name,
+                ev.subject or '',
+                ev.score if ev.score is not None else '',
+                ev.evaluation_date.strftime('%Y-%m-%d') if ev.evaluation_date else '',
+                ev.notes or ''
+            ])
+
+    csv_data = '\ufeff' + output.getvalue()
+    response = make_response(csv_data)
+    response.headers['Content-Type'] = 'text/csv; charset=utf-8'
+    response.headers['Content-Disposition'] = 'attachment; filename="evaluations_all.csv"'
+    return response
 
 if __name__ == '__main__':
     with app.app_context():

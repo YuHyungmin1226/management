@@ -37,6 +37,11 @@ def main():
             failures.append(f"[add_student] status {r.status_code}")
         assert_in('학생이 성공적으로 추가되었습니다.', r.get_data(as_text=True), 'add_student', failures)
 
+        # 학생 객체 조회 (이후 테스트에서 사용)
+        s1 = Student.query.filter_by(student_number='S001').first()
+        if not s1:
+            failures.append('[db] 학생 S001 조회 실패(초기)')
+
         # 검색: 이름으로
         r = client.get('/?q=%ED%99%8D%EA%B8%B8%EB%8F%99')
         if r.status_code != 200:
@@ -48,6 +53,16 @@ def main():
         if r.status_code != 200:
             failures.append(f"[search_number] status {r.status_code}")
         assert_in('S001', r.get_data(as_text=True), 'search_number', failures)
+
+        # CSV 전체 평가 다운로드 (학생 추가 직후에도 빈 CSV여야 함)
+        r = client.get('/evaluations/export')
+        if r.status_code != 200 or 'text/csv' not in r.headers.get('Content-Type', ''):
+            failures.append('[export_all] CSV 응답 오류')
+        # 학생 평가 다운로드 (평가 추가 후)
+        r = client.get(f'/student/{s1.id}/evaluations/export')
+        if r.status_code != 200 or 'text/csv' not in r.headers.get('Content-Type', ''):
+            failures.append('[export_student] CSV 응답 오류')
+
 
         # 3) 학생 추가 중복 오류
         r = client.post('/student/new', data={

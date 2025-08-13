@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}학생 CSV 일괄 등록{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">학생 CSV 일괄 등록</h1>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <p class="mb-2">다음 형식의 CSV 파일을 업로드하세요:</p>
+            <pre class="bg-light p-3 rounded border"><code>student_number,name
+S001,홍길동
+S002,김철수</code></pre>
+            <p class="text-muted">첫 줄에 한글 헤더 <code>학번,이름</code> 도 인식합니다. 인코딩은 UTF-8 권장.</p>
+        </div>
+    </div>
+
+    <form action="{{ url_for('import_students') }}" method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="file" class="form-label">CSV 파일</label>
+            <input type="file" class="form-control" id="file" name="file" accept=".csv" required>
+        </div>
+        <button type="submit" class="btn btn-success">업로드</button>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">취소</a>
+    </form>
+</div>
+{% endblock %}
+

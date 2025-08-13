@@ -18,6 +18,12 @@
         <div class="col-auto ms-auto">
             <a href="{{ url_for('add_student') }}" class="btn btn-primary">새 학생 추가</a>
         </div>
+        <div class="col-auto">
+            <a href="{{ url_for('import_students') }}" class="btn btn-outline-success">CSV 일괄 등록</a>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('export_all_evaluations') }}" class="btn btn-outline-info">평가 CSV 전체 다운로드</a>
+        </div>
     </form>
 
     {% if students %}
