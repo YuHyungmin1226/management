@@ -22,10 +22,14 @@
         </div>
     </div>
 
-    <h2 class="mb-3">평가 기록</h2>
-    <div class="d-flex gap-2 mb-3">
-        <a href="{{ url_for('add_evaluation', student_id=student.id) }}" class="btn btn-primary">새 평가 추가</a>
-        <a href="{{ url_for('export_student_evaluations', student_id=student.id) }}" class="btn btn-outline-info">이 학생 평가 CSV 다운로드</a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="m-0">평가 기록</h2>
+        <div class="action-bar">
+            <div class="btn-group">
+                <a href="{{ url_for('add_evaluation', student_id=student.id) }}" class="btn btn-primary">평가 추가</a>
+                <a href="{{ url_for('export_student_evaluations', student_id=student.id) }}" class="btn btn-outline-info">CSV 다운로드</a>
+            </div>
+        </div>
     </div>
 
     {% if student.evaluations %}
