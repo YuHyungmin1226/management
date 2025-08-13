@@ -81,12 +81,24 @@ def view_student(student_id):
 def edit_student(student_id):
     student = Student.query.get_or_404(student_id)
     if request.method == 'POST':
-        student.student_number = request.form.get('student_number')
-        student.name = request.form.get('name')
+        new_student_number = request.form.get('student_number')
+        new_name = request.form.get('name')
         
-        if not student.student_number or not student.name:
+        if not new_student_number or not new_name:
             flash('학번과 이름을 모두 입력해주세요.', 'error')
             return render_template('edit_student.html', student=student)
+
+        # 학번 고유성 검증: 본인 이외 동일 학번 존재 시 오류
+        existing_student = Student.query.filter(
+            Student.student_number == new_student_number,
+            Student.id != student.id
+        ).first()
+        if existing_student:
+            flash('이미 존재하는 학번입니다.', 'error')
+            return render_template('edit_student.html', student=student)
+
+        student.student_number = new_student_number
+        student.name = new_name
 
         db.session.commit()
         flash('학생 정보가 성공적으로 수정되었습니다.', 'success')
@@ -112,14 +124,19 @@ def add_evaluation(student_id):
 
         if not subject or not score or not evaluation_date_str:
             flash('과목, 점수, 평가일을 모두 입력해주세요.', 'error')
-            return render_template('add_evaluation.html', student=student)
+            return render_template('add_evaluation.html', student=student, today=datetime.utcnow().date())
 
         try:
             score = float(score)
             evaluation_date = datetime.strptime(evaluation_date_str, '%Y-%m-%d').date()
         except ValueError:
             flash('점수 또는 날짜 형식이 올바르지 않습니다.', 'error')
-            return render_template('add_evaluation.html', student=student)
+            return render_template('add_evaluation.html', student=student, today=datetime.utcnow().date())
+
+        # 점수 범위 검증
+        if score < 0 or score > 100:
+            flash('점수는 0에서 100 사이여야 합니다.', 'error')
+            return render_template('add_evaluation.html', student=student, today=datetime.utcnow().date())
 
         new_evaluation = Evaluation(
             subject=subject,
@@ -132,7 +149,7 @@ def add_evaluation(student_id):
         db.session.commit()
         flash('평가가 성공적으로 추가되었습니다.', 'success')
         return redirect(url_for('view_student', student_id=student_id))
-    return render_template('add_evaluation.html', student=student)
+    return render_template('add_evaluation.html', student=student, today=datetime.utcnow().date())
 
 @app.route('/evaluation/<int:evaluation_id>/delete', methods=['POST'])
 def delete_evaluation(evaluation_id):

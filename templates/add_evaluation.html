@@ -16,7 +16,7 @@
         </div>
         <div class="mb-3">
             <label for="evaluation_date" class="form-label">평가일</label>
-            <input type="date" class="form-control" id="evaluation_date" name="evaluation_date" value="{{ "now"|format_date("%Y-%m-%d") }}" required>
+            <input type="date" class="form-control" id="evaluation_date" name="evaluation_date" value="{{ today|format_date('%Y-%m-%d') }}" required>
         </div>
         <div class="mb-3">
             <label for="notes" class="form-label">비고</label>
