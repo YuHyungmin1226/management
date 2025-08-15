@@ -6,9 +6,31 @@ import csv
 import io
 import os
 import sys
+import logging
 from flask_wtf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+
+# 로깅 설정
+def setup_logging():
+    """로깅 설정 초기화"""
+    log_level = getattr(logging, os.environ.get('LOG_LEVEL', 'INFO').upper())
+    log_file = os.environ.get('LOG_FILE', 'management.log')
+    
+    logging.basicConfig(
+        level=log_level,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler(log_file, encoding='utf-8'),
+            logging.StreamHandler()
+        ]
+    )
+    return logging.getLogger(__name__)
+
+logger = setup_logging()
+
+# 설정 가져오기
+from config import config
 
 # 템플릿 경로 설정: PyInstaller(onefile) 환경에서도 동작하도록 처리
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
@@ -17,21 +39,10 @@ else:
     base_path = os.path.dirname(os.path.abspath(__file__))
 
 app = Flask(__name__, template_folder=os.path.join(base_path, 'templates'))
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config['SESSION_COOKIE_SECURE'] = False
 
-# 포터블 버전 대응 - 데이터베이스 경로 설정
-if getattr(sys, 'frozen', False):
-    # PyInstaller로 빌드된 경우
-    current_dir = os.path.dirname(sys.executable)
-else:
-    # 일반 Python 실행의 경우
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-
-db_path = os.path.join(current_dir, 'management.db')
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# 환경 설정 적용
+config_name = os.environ.get('FLASK_ENV', 'default')
+app.config.from_object(config[config_name])
 
 db = SQLAlchemy(app)
 csrf = CSRFProtect(app)
@@ -39,7 +50,7 @@ limiter = Limiter(
     get_remote_address,
     app=app,
     default_limits=["200 per day", "50 per hour"],
-    storage_uri=os.environ.get("RATELIMIT_STORAGE_URI", "memory://"),
+    storage_uri=app.config['RATELIMIT_STORAGE_URI'],
 )
 
 @app.context_processor
@@ -93,18 +104,23 @@ def add_student():
         student_number = request.form.get('student_number')
         name = request.form.get('name')
         
+        logger.info(f'학생 추가 시도: {student_number} - {name}')
+        
         if not student_number or not name:
+            logger.warning('학생 추가 실패: 필수 필드 누락')
             flash('학번과 이름을 모두 입력해주세요.', 'error')
             return redirect(url_for('add_student'))
             
         existing_student = Student.query.filter_by(student_number=student_number).first()
         if existing_student:
+            logger.warning(f'학생 추가 실패: 중복 학번 {student_number}')
             flash('이미 존재하는 학번입니다.', 'error')
             return redirect(url_for('add_student'))
 
         new_student = Student(student_number=student_number, name=name)
         db.session.add(new_student)
         db.session.commit()
+        logger.info(f'학생 추가 성공: {student_number} - {name}')
         flash('학생이 성공적으로 추가되었습니다.', 'success')
         return redirect(url_for('index'))
     return render_template('add_student.html')
@@ -162,15 +178,24 @@ def add_evaluation(student_id):
         evaluation_date_str = request.form.get('evaluation_date')
         notes = request.form.get('notes')
 
-        if not subject or not score or not evaluation_date_str:
-            flash('과목, 점수, 평가일을 모두 입력해주세요.', 'error')
+        if not subject or not evaluation_date_str:
+            flash('과목과 평가일을 입력해주세요.', 'error')
             return render_template('add_evaluation.html', student=student, today=date.today())
 
+        # 점수가 선택되지 않은 경우 0점으로 처리
+        if not score:
+            score = 0
+        else:
+            try:
+                score = int(score)
+            except ValueError:
+                flash('점수 형식이 올바르지 않습니다.', 'error')
+                return render_template('add_evaluation.html', student=student, today=date.today())
+
         try:
-            score = int(score)
             evaluation_date = datetime.strptime(evaluation_date_str, '%Y-%m-%d').date()
         except ValueError:
-            flash('점수 또는 날짜 형식이 올바르지 않습니다.', 'error')
+            flash('날짜 형식이 올바르지 않습니다.', 'error')
             return render_template('add_evaluation.html', student=student, today=date.today())
 
         # 점수 범위 검증 (-5 ~ +5)
@@ -190,6 +215,55 @@ def add_evaluation(student_id):
         flash('평가가 성공적으로 추가되었습니다.', 'success')
         return redirect(url_for('view_student', student_id=student_id))
     return render_template('add_evaluation.html', student=student, today=date.today())
+
+@app.route('/evaluation/<int:evaluation_id>/edit', methods=['GET', 'POST'])
+@limiter.limit("60/hour")
+def edit_evaluation(evaluation_id):
+    evaluation = Evaluation.query.get_or_404(evaluation_id)
+    student = evaluation.student
+    
+    if request.method == 'POST':
+        subject = request.form.get('subject')
+        score = request.form.get('score')
+        evaluation_date_str = request.form.get('evaluation_date')
+        notes = request.form.get('notes')
+
+        if not subject or not evaluation_date_str:
+            flash('과목과 평가일을 입력해주세요.', 'error')
+            return render_template('edit_evaluation.html', evaluation=evaluation, student=student, today=date.today())
+
+        # 점수가 선택되지 않은 경우 0점으로 처리
+        if not score:
+            score = 0
+        else:
+            try:
+                score = int(score)
+            except ValueError:
+                flash('점수 형식이 올바르지 않습니다.', 'error')
+                return render_template('edit_evaluation.html', evaluation=evaluation, student=student, today=date.today())
+
+        try:
+            evaluation_date = datetime.strptime(evaluation_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            flash('날짜 형식이 올바르지 않습니다.', 'error')
+            return render_template('edit_evaluation.html', evaluation=evaluation, student=student, today=date.today())
+
+        # 점수 범위 검증 (-5 ~ +5)
+        if score < -5 or score > 5:
+            flash('점수는 -5에서 5 사이여야 합니다.', 'error')
+            return render_template('edit_evaluation.html', evaluation=evaluation, student=student, today=date.today())
+
+        # 평가 정보 업데이트
+        evaluation.subject = subject
+        evaluation.score = score
+        evaluation.evaluation_date = evaluation_date
+        evaluation.notes = notes
+
+        db.session.commit()
+        flash('평가가 성공적으로 수정되었습니다.', 'success')
+        return redirect(url_for('view_student', student_id=student.id))
+    
+    return render_template('edit_evaluation.html', evaluation=evaluation, student=student, today=date.today())
 
 @app.route('/evaluation/<int:evaluation_id>/delete', methods=['POST'])
 @limiter.limit("60/hour")
@@ -308,7 +382,27 @@ def export_all_evaluations():
     response.headers['Content-Disposition'] = 'attachment; filename="evaluations_all.csv"'
     return response
 
+# 에러 핸들러
+@app.errorhandler(404)
+def not_found_error(error):
+    logger.warning(f'404 에러: {request.url}')
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    logger.error(f'500 에러: {error}')
+    db.session.rollback()
+    return render_template('500.html'), 500
+
+@app.errorhandler(413)
+def too_large(error):
+    logger.warning('파일 크기 초과')
+    flash('파일 크기가 너무 큽니다.', 'error')
+    return redirect(request.referrer or url_for('index'))
+
 if __name__ == '__main__':
+    logger.info('학생 관리 시스템 시작')
     with app.app_context():
         db.create_all()
+        logger.info('데이터베이스 초기화 완료')
     app.run(debug=True, host='0.0.0.0', port=5000) 

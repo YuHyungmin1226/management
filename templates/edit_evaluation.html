@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ student.name }} 학생 평가 추가{% endblock %}
+{% block title %}{{ student.name }} 학생 평가 수정{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -20,7 +20,7 @@
                         </a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">
-                        <i class="bi bi-plus-circle-fill me-1"></i>평가 추가
+                        <i class="bi bi-pencil-fill me-1"></i>평가 수정
                     </li>
                 </ol>
             </nav>
@@ -32,13 +32,13 @@
             <div class="card">
                 <div class="card-header">
                     <h3 class="mb-0">
-                        <i class="bi bi-plus-circle-fill me-2"></i>{{ student.name }} 학생 평가 추가
+                        <i class="bi bi-pencil-fill me-2"></i>{{ student.name }} 학생 평가 수정
                     </h3>
                 </div>
                 <div class="card-body">
                     
 
-                    <form action="{{ url_for('add_evaluation', student_id=student.id) }}" method="POST" id="addEvaluationForm">
+                    <form action="{{ url_for('edit_evaluation', evaluation_id=evaluation.id) }}" method="POST" id="editEvaluationForm">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         
                         <div class="row">
@@ -51,6 +51,7 @@
                                        id="subject" 
                                        name="subject" 
                                        placeholder="예: 수학, 국어, 영어"
+                                       value="{{ evaluation.subject }}"
                                        required
                                        maxlength="100">
                                 
@@ -64,7 +65,7 @@
                                        class="form-control" 
                                        id="evaluation_date" 
                                        name="evaluation_date" 
-                                       value="{{ today|format_date('%Y-%m-%d') }}" 
+                                       value="{{ evaluation.evaluation_date|format_date('%Y-%m-%d') }}" 
                                        required>
                                 
                             </div>
@@ -74,47 +75,49 @@
                             <label for="score" class="form-label">
                                 <i class="bi bi-star me-1"></i>점수
                             </label>
-                                                         <div class="score-selector">
-                                 <!-- 음수 점수 (-5 ~ -1) -->
-                                 <div class="mb-3">
-                                     <div class="d-flex gap-1">
-                                         {% for s in range(-5, 0) %}
-                                         <div class="flex-fill">
-                                             <input type="radio" 
-                                                    class="btn-check" 
-                                                    name="score" 
-                                                    id="score_{{ s }}" 
-                                                    value="{{ s }}">
-                                             <label class="btn btn-outline-danger w-100" 
-                                                    for="score_{{ s }}">
-                                                 {{ s }}
-                                             </label>
-                                         </div>
-                                         {% endfor %}
-                                     </div>
-                                 </div>
-                                 
-                                 <!-- 양수 점수 (+1 ~ +5) -->
-                                 <div class="mb-2">
-                                     <div class="d-flex gap-1">
-                                         {% for s in range(1, 6) %}
-                                         <div class="flex-fill">
-                                             <input type="radio" 
-                                                    class="btn-check" 
-                                                    name="score" 
-                                                    id="score_{{ s }}" 
-                                                    value="{{ s }}">
-                                             <label class="btn btn-outline-success w-100" 
-                                                    for="score_{{ s }}">
-                                                 +{{ s }}
-                                             </label>
-                                         </div>
-                                         {% endfor %}
-                                     </div>
-                                 </div>
-                             </div>
+                            <div class="score-selector">
+                                <!-- 음수 점수 (-5 ~ -1) -->
+                                <div class="mb-3">
+                                    <div class="d-flex gap-1">
+                                        {% for s in range(-5, 0) %}
+                                        <div class="flex-fill">
+                                            <input type="radio" 
+                                                   class="btn-check" 
+                                                   name="score" 
+                                                   id="score_{{ s }}" 
+                                                   value="{{ s }}"
+                                                   {% if evaluation.score == s %}checked{% endif %}>
+                                            <label class="btn btn-outline-danger w-100" 
+                                                   for="score_{{ s }}">
+                                                {{ s }}
+                                            </label>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
                                 
-                             </div>
+                                <!-- 양수 점수 (+1 ~ +5) -->
+                                <div class="mb-2">
+                                    <div class="d-flex gap-1">
+                                        {% for s in range(1, 6) %}
+                                        <div class="flex-fill">
+                                            <input type="radio" 
+                                                   class="btn-check" 
+                                                   name="score" 
+                                                   id="score_{{ s }}" 
+                                                   value="{{ s }}"
+                                                   {% if evaluation.score == s %}checked{% endif %}>
+                                            <label class="btn btn-outline-success w-100" 
+                                                   for="score_{{ s }}">
+                                                +{{ s }}
+                                            </label>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </div>
 
                         <div class="mb-4">
                             <label for="notes" class="form-label">
@@ -125,7 +128,7 @@
                                       name="notes" 
                                       rows="4" 
                                       placeholder="학생의 성과, 개선점, 특이사항 등을 자유롭게 기록하세요."
-                                      maxlength="1000"></textarea>
+                                      maxlength="1000">{{ evaluation.notes or '' }}</textarea>
                             
                         </div>
 
@@ -133,7 +136,7 @@
 
                         <div class="action-buttons">
                             <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-circle-fill me-2"></i>평가 추가
+                                <i class="bi bi-check-circle-fill me-2"></i>평가 수정
                             </button>
                             <a href="{{ url_for('view_student', student_id=student.id) }}" class="btn btn-outline-secondary">
                                 <i class="bi bi-x-circle me-2"></i>취소
@@ -150,7 +153,7 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('addEvaluationForm');
+    const form = document.getElementById('editEvaluationForm');
     const subjectInput = document.getElementById('subject');
     const scoreInputs = document.querySelectorAll('input[name="score"]');
     const dateInput = document.getElementById('evaluation_date');
@@ -171,8 +174,6 @@ document.addEventListener('DOMContentLoaded', function() {
             subjectInput.focus();
             return;
         }
-        
-
         
         if (!date) {
             e.preventDefault();
@@ -212,35 +213,41 @@ document.addEventListener('DOMContentLoaded', function() {
     
 
     
-         // 점수 선택 시 시각적 피드백 및 토글 기능
-     scoreInputs.forEach(input => {
-         input.addEventListener('change', function() {
-             // 모든 라벨에서 active 클래스 제거
-             document.querySelectorAll('.score-selector label').forEach(label => {
-                 label.classList.remove('active');
-             });
-             
-             // 선택된 라벨에 active 클래스 추가
-             if (this.checked) {
-                 this.nextElementSibling.classList.add('active');
-             }
-         });
-         
-         // 라벨 클릭 시 토글 기능
-         const label = input.nextElementSibling;
-         label.addEventListener('click', function(e) {
-             // 이미 선택된 버튼을 다시 클릭한 경우
-             if (input.checked) {
-                 e.preventDefault();
-                 input.checked = false;
-                 this.classList.remove('active');
-                 
-                 // change 이벤트 발생시키기
-                 const changeEvent = new Event('change', { bubbles: true });
-                 input.dispatchEvent(changeEvent);
-             }
-         });
-     });
+    // 점수 선택 시 시각적 피드백 및 토글 기능
+    scoreInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            // 모든 라벨에서 active 클래스 제거
+            document.querySelectorAll('.score-selector label').forEach(label => {
+                label.classList.remove('active');
+            });
+            
+            // 선택된 라벨에 active 클래스 추가
+            if (this.checked) {
+                this.nextElementSibling.classList.add('active');
+            }
+        });
+        
+        // 라벨 클릭 시 토글 기능
+        const label = input.nextElementSibling;
+        label.addEventListener('click', function(e) {
+            // 이미 선택된 버튼을 다시 클릭한 경우
+            if (input.checked) {
+                e.preventDefault();
+                input.checked = false;
+                this.classList.remove('active');
+                
+                // change 이벤트 발생시키기
+                const changeEvent = new Event('change', { bubbles: true });
+                input.dispatchEvent(changeEvent);
+            }
+        });
+    });
+    
+    // 초기 로드 시 선택된 점수에 active 클래스 추가
+    const checkedScore = document.querySelector('input[name="score"]:checked');
+    if (checkedScore) {
+        checkedScore.nextElementSibling.classList.add('active');
+    }
 });
 </script>
 

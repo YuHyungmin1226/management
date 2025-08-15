@@ -4,19 +4,133 @@
 
 {% block content %}
 <div class="container">
-    <h1 class="mb-4">새 학생 추가</h1>
-    <form action="{{ url_for('add_student') }}" method="POST">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <div class="mb-3">
-            <label for="student_number" class="form-label">학번</label>
-            <input type="text" class="form-control" id="student_number" name="student_number" required>
+    <!-- 헤더 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('index') }}">
+                            <i class="bi bi-house-fill me-1"></i>홈
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <i class="bi bi-person-plus-fill me-1"></i>새 학생 추가
+                    </li>
+                </ol>
+            </nav>
         </div>
-        <div class="mb-3">
-            <label for="name" class="form-label">이름</label>
-            <input type="text" class="form-control" id="name" name="name" required>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="bi bi-person-plus-fill me-2"></i>새 학생 추가
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('add_student') }}" method="POST" id="addStudentForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="student_number" class="form-label">
+                                    <i class="bi bi-hash me-1"></i>학번 <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="student_number" 
+                                       name="student_number" 
+                                       placeholder="예: 2024001"
+                                       required
+                                       maxlength="20">
+
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">
+                                    <i class="bi bi-person me-1"></i>이름 <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="name" 
+                                       name="name" 
+                                       placeholder="예: 홍길동"
+                                       required
+                                       maxlength="50">
+
+                            </div>
+                        </div>
+
+
+
+                        <div class="action-buttons">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle-fill me-2"></i>학생 추가
+                            </button>
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>취소
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-        <button type="submit" class="btn btn-primary">학생 추가</button>
-        <a href="{{ url_for('index') }}" class="btn btn-secondary">취소</a>
-    </form>
+    </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('addStudentForm');
+    const studentNumberInput = document.getElementById('student_number');
+    const nameInput = document.getElementById('name');
+    
+    // 학번 입력 시 자동 포커스
+    studentNumberInput.focus();
+    
+    // 폼 제출 시 유효성 검사
+    form.addEventListener('submit', function(e) {
+        const studentNumber = studentNumberInput.value.trim();
+        const name = nameInput.value.trim();
+        
+        if (!studentNumber) {
+            e.preventDefault();
+            alert('학번을 입력해주세요.');
+            studentNumberInput.focus();
+            return;
+        }
+        
+        if (!name) {
+            e.preventDefault();
+            alert('이름을 입력해주세요.');
+            nameInput.focus();
+            return;
+        }
+        
+        // 학번 형식 검증 (선택사항)
+        if (studentNumber.length < 3) {
+            if (!confirm('학번이 너무 짧습니다. 계속 진행하시겠습니까?')) {
+                e.preventDefault();
+                studentNumberInput.focus();
+                return;
+            }
+        }
+    });
+    
+    // 입력 필드 실시간 유효성 검사
+    studentNumberInput.addEventListener('input', function() {
+        // 학번: 숫자와 영문자만 허용
+        this.value = this.value.replace(/[^a-zA-Z0-9]/g, '');
+    });
+    
+    nameInput.addEventListener('input', function() {
+        // 이름: 한글(자모 포함), 영문, 공백만 허용
+        this.value = this.value.replace(/[^ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z\s]/g, '');
+    });
+});
+</script>
 {% endblock %}

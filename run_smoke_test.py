@@ -1,6 +1,9 @@
 import sys
 from datetime import datetime, UTC
 
+import os
+os.environ['FLASK_ENV'] = 'testing'
+
 from management_app import app, db, Student, Evaluation
 
 

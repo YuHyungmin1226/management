@@ -1,4 +1,4 @@
-# Flask SNS 포터블 앱 .gitignore
+# 학생 관리 시스템 포터블 앱 .gitignore
 
 # 데이터베이스
 *.db
@@ -38,6 +38,9 @@ MANIFEST
 *.spec
 *.exe
 FlaskSNS_Portable/
+학생관리시스템/
+dist/
+build/
 
 # 환경 변수
 .env
@@ -65,6 +68,7 @@ Thumbs.db
 # 로그 파일
 *.log
 logs/
+management.log
 
 # 임시 파일
 *.tmp
@@ -80,6 +84,11 @@ tmp/
 # 캐시
 .cache/
 *.cache
+
+# 가상환경
+venv/
+env/
+.env/
 
 # 테스트 커버리지
 htmlcov/

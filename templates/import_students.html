@@ -4,27 +4,343 @@
 
 {% block content %}
 <div class="container">
-    <h1 class="mb-4">학생 CSV 일괄 등록</h1>
-
-    <div class="card mb-3">
-        <div class="card-body">
-            <p class="mb-2">다음 형식의 CSV 파일을 업로드하세요:</p>
-            <pre class="bg-light p-3 rounded border"><code>student_number,name
-S001,홍길동
-S002,김철수</code></pre>
-            <p class="text-muted">첫 줄에 한글 헤더 <code>학번,이름</code> 도 인식합니다. 인코딩은 UTF-8 권장.</p>
+    <!-- 헤더 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('index') }}">
+                            <i class="bi bi-house-fill me-1"></i>홈
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <i class="bi bi-upload me-1"></i>CSV 일괄 등록
+                    </li>
+                </ol>
+            </nav>
         </div>
     </div>
 
-    <form action="{{ url_for('import_students') }}" method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <div class="mb-3">
-            <label for="file" class="form-label">CSV 파일</label>
-            <input type="file" class="form-control" id="file" name="file" accept=".csv" required>
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                                 <div class="card-header">
+                     <div class="d-flex justify-content-between align-items-center">
+                         <h3 class="mb-0">
+                             <i class="bi bi-upload me-2"></i>학생 CSV 일괄 등록
+                         </h3>
+                         <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#csvGuideModal" title="CSV 형식 안내">
+                             <i class="bi bi-question-circle"></i>
+                         </button>
+                     </div>
+                 </div>
+                 <div class="card-body">
+                     <!-- CSV 파일 업로드 제목 -->
+                     <h5 class="mb-4">CSV 파일 업로드</h5>
+
+                    <!-- 파일 업로드 영역 -->
+                    <form action="{{ url_for('import_students') }}" method="POST" enctype="multipart/form-data" id="importForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="upload-area mb-4" id="uploadArea">
+                            <div class="upload-content text-center py-5">
+                                <i class="bi bi-cloud-upload display-1 text-muted mb-3"></i>
+                                <h5 class="text-muted mb-3">CSV 파일을 선택하거나 여기에 드래그하세요</h5>
+                                <p class="text-muted mb-4">지원 형식: .csv (최대 50MB)</p>
+                                <input type="file" 
+                                       class="form-control d-none" 
+                                       id="file" 
+                                       name="file" 
+                                       accept=".csv" 
+                                       required
+                                       title="CSV 파일 선택">
+                                <button type="button" class="btn btn-primary" onclick="document.getElementById('file').click()">
+                                    <i class="bi bi-folder2-open me-2"></i>파일 선택
+                                </button>
+                            </div>
+                            <div class="file-info d-none" id="fileInfo">
+                                <div class="d-flex align-items-center p-3 bg-light rounded">
+                                    <i class="bi bi-file-earmark-text fs-4 me-3 text-primary"></i>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1" id="fileName">파일명</h6>
+                                        <small class="text-muted" id="fileSize">파일 크기</small>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearFile()" title="선택된 파일 제거">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                                                 <!-- 업로드 옵션 -->
+                         <div class="mb-3">
+                             <h6 class="mb-2">업로드 옵션</h6>
+                             <div class="form-check mb-2">
+                                 <input class="form-check-input" type="checkbox" id="skipDuplicates" name="skip_duplicates" checked>
+                                 <label class="form-check-label" for="skipDuplicates">
+                                     중복된 학번은 건너뛰기 (권장)
+                                 </label>
+                             </div>
+                             <div class="form-check mb-3">
+                                 <input class="form-check-input" type="checkbox" id="validateData" name="validate_data" checked>
+                                 <label class="form-check-label" for="validateData">
+                                     데이터 유효성 검사 (권장)
+                                 </label>
+                             </div>
+                         </div>
+
+                        <div class="action-buttons">
+                            <button type="submit" class="btn btn-success" id="uploadBtn" disabled>
+                                <i class="bi bi-upload me-2"></i>CSV 업로드
+                            </button>
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>취소
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 샘플 CSV 다운로드 -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-download me-2"></i>샘플 파일 다운로드
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">
+                        CSV 형식을 확인하거나 테스트용으로 사용할 수 있는 샘플 파일을 다운로드하세요.
+                    </p>
+                    <div class="action-buttons">
+                        <button type="button" class="btn btn-outline-primary" onclick="downloadSampleCSV()">
+                            <i class="bi bi-download me-2"></i>샘플 CSV 다운로드
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
-        <button type="submit" class="btn btn-success">업로드</button>
-        <a href="{{ url_for('index') }}" class="btn btn-secondary">취소</a>
-    </form>
+    </div>
 </div>
+
+<!-- CSV 형식 안내 모달 -->
+<div class="modal fade" id="csvGuideModal" tabindex="-1" aria-labelledby="csvGuideModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="csvGuideModalLabel">
+                    <i class="bi bi-info-circle me-2"></i>CSV 파일 형식 안내
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">다음 형식의 CSV 파일을 업로드하세요:</p>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">영문 헤더 형식</h6>
+                        <pre class="bg-light p-3 rounded border"><code>student_number,name
+S001,홍길동
+S002,김철수
+S003,이영희</code></pre>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-primary">한글 헤더 형식</h6>
+                        <pre class="bg-light p-3 rounded border"><code>학번,이름
+S001,홍길동
+S002,김철수
+S003,이영희</code></pre>
+                    </div>
+                </div>
+                
+                                 <div class="mt-3">
+                     <strong>주의사항:</strong>
+                     <ul class="mb-0 mt-2">
+                         <li>인코딩은 <strong>UTF-8</strong>을 권장합니다</li>
+                         <li>첫 번째 줄은 헤더로 인식됩니다</li>
+                         <li>학번은 고유해야 하며, 중복된 학번은 건너뜁니다</li>
+                         <li>빈 행이나 잘못된 형식의 행은 자동으로 제외됩니다</li>
+                     </ul>
+                 </div>
+                 
+                 <hr class="my-4">
+                 
+                 <h6 class="text-warning mb-3">
+                     <i class="bi bi-exclamation-triangle me-2"></i>업로드 옵션 안내
+                 </h6>
+                 
+                 <div class="row">
+                     <div class="col-md-6">
+                         <h6 class="text-warning">중복된 학번은 건너뛰기</h6>
+                         <p class="mb-2">이 옵션을 활성화하면:</p>
+                         <ul class="mb-0">
+                             <li>이미 존재하는 학번의 학생은 자동으로 건너뜁니다</li>
+                             <li>새로운 학생만 데이터베이스에 추가됩니다</li>
+                             <li>기존 데이터를 보호할 수 있습니다</li>
+                         </ul>
+                     </div>
+                     <div class="col-md-6">
+                         <h6 class="text-warning">데이터 유효성 검사</h6>
+                         <p class="mb-2">이 옵션을 활성화하면:</p>
+                         <ul class="mb-0">
+                             <li>학번과 이름의 형식을 검사합니다</li>
+                             <li>빈 필드나 잘못된 형식의 데이터를 감지합니다</li>
+                             <li>오류가 있는 행은 건너뛰고 성공한 행만 처리합니다</li>
+                             <li>업로드 결과에서 오류 내용을 확인할 수 있습니다</li>
+                         </ul>
+                     </div>
+                 </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('file');
+    const uploadArea = document.getElementById('uploadArea');
+    const uploadContent = document.querySelector('.upload-content');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const form = document.getElementById('importForm');
+
+    // 파일 선택 시 처리
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            displayFileInfo(file);
+        }
+    });
+
+    // 드래그 앤 드롭 처리
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+                fileInput.files = files;
+                displayFileInfo(file);
+            } else {
+                showError('CSV 파일만 업로드 가능합니다. 올바른 파일 형식을 선택해주세요.');
+            }
+        }
+    });
+
+    // 파일 정보 표시
+    function displayFileInfo(file) {
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+        
+        uploadContent.classList.add('d-none');
+        fileInfo.classList.remove('d-none');
+        uploadBtn.disabled = false;
+    }
+
+    // 파일 크기 포맷팅
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // 파일 선택 해제
+    window.clearFile = function() {
+        fileInput.value = '';
+        uploadContent.classList.remove('d-none');
+        fileInfo.classList.add('d-none');
+        uploadBtn.disabled = true;
+    };
+
+    // 폼 제출 시 유효성 검사
+    form.addEventListener('submit', function(e) {
+        const file = fileInput.files[0];
+        if (!file) {
+            e.preventDefault();
+            showError('CSV 파일을 선택해주세요.');
+            return;
+        }
+
+        if (file.size > 50 * 1024 * 1024) { // 50MB
+            e.preventDefault();
+            showError('파일 크기가 50MB를 초과합니다. 더 작은 파일을 선택해주세요.');
+            return;
+        }
+
+        if (!file.name.endsWith('.csv')) {
+            e.preventDefault();
+            showError('CSV 파일만 업로드 가능합니다. 올바른 파일 형식을 선택해주세요.');
+            return;
+        }
+    });
+
+    // 에러 메시지 표시 함수
+    function showError(message) {
+        // 기존 에러 메시지 제거
+        const existingError = document.querySelector('.error-message');
+        if (existingError) {
+            existingError.remove();
+        }
+
+        // 새 에러 메시지 생성
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'alert alert-danger error-message mt-3';
+        errorDiv.innerHTML = `
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            ${message}
+        `;
+
+        // 폼 앞에 삽입
+        form.parentNode.insertBefore(errorDiv, form);
+
+        // 5초 후 자동 제거
+        setTimeout(() => {
+            if (errorDiv.parentNode) {
+                errorDiv.remove();
+            }
+        }, 5000);
+    }
+
+    // 샘플 CSV 다운로드
+    window.downloadSampleCSV = function() {
+        const csvContent = 'student_number,name\nS001,홍길동\nS002,김철수\nS003,이영희';
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'sample_students.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+});
+</script>
+
+
 {% endblock %}
 
