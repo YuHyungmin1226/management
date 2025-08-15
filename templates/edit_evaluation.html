@@ -76,47 +76,36 @@
                                 <i class="bi bi-star me-1"></i>점수
                             </label>
                             <div class="score-selector">
-                                <!-- 음수 점수 (-5 ~ -1) -->
-                                <div class="mb-3">
-                                    <div class="d-flex gap-1">
-                                        {% for s in range(-5, 0) %}
-                                        <div class="flex-fill">
-                                            <input type="radio" 
-                                                   class="btn-check" 
-                                                   name="score" 
-                                                   id="score_{{ s }}" 
-                                                   value="{{ s }}"
-                                                   {% if evaluation.score == s %}checked{% endif %}>
-                                            <label class="btn btn-outline-danger w-100" 
-                                                   for="score_{{ s }}">
-                                                {{ s }}
-                                            </label>
-                                        </div>
-                                        {% endfor %}
+                                <div class="d-flex gap-1">
+                                    <!-- 음수 점수 (-1) -->
+                                    <div class="flex-fill">
+                                        <input type="radio" 
+                                               class="btn-check" 
+                                               name="score" 
+                                               id="score_-1" 
+                                               value="-1"
+                                               {% if evaluation.score == -1 %}checked{% endif %}>
+                                        <label class="btn btn-outline-danger w-100" 
+                                               for="score_-1">
+                                            -1
+                                        </label>
                                     </div>
-                                </div>
-                                
-                                <!-- 양수 점수 (+1 ~ +5) -->
-                                <div class="mb-2">
-                                    <div class="d-flex gap-1">
-                                        {% for s in range(1, 6) %}
-                                        <div class="flex-fill">
-                                            <input type="radio" 
-                                                   class="btn-check" 
-                                                   name="score" 
-                                                   id="score_{{ s }}" 
-                                                   value="{{ s }}"
-                                                   {% if evaluation.score == s %}checked{% endif %}>
-                                            <label class="btn btn-outline-success w-100" 
-                                                   for="score_{{ s }}">
-                                                +{{ s }}
-                                            </label>
-                                        </div>
-                                        {% endfor %}
+                                    
+                                    <!-- 양수 점수 (+1) -->
+                                    <div class="flex-fill">
+                                        <input type="radio" 
+                                               class="btn-check" 
+                                               name="score" 
+                                               id="score_1" 
+                                               value="1"
+                                               {% if evaluation.score == 1 %}checked{% endif %}>
+                                        <label class="btn btn-outline-success w-100" 
+                                               for="score_1">
+                                            +1
+                                        </label>
                                     </div>
                                 </div>
                             </div>
-                            
                         </div>
 
                         <div class="mb-4">
@@ -165,7 +154,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // 폼 제출 시 유효성 검사
     form.addEventListener('submit', function(e) {
         const subject = subjectInput.value.trim();
-        const selectedScore = document.querySelector('input[name="score"]:checked');
         const date = dateInput.value;
         
         if (!subject) {
@@ -174,6 +162,8 @@ document.addEventListener('DOMContentLoaded', function() {
             subjectInput.focus();
             return;
         }
+        
+        // 점수 선택은 선택사항 (선택하지 않으면 0점으로 처리됨)
         
         if (!date) {
             e.preventDefault();
@@ -203,7 +193,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // 평가 내용 텍스트 영역 실시간 유효성 검사
-    const notesInput = document.getElementById('notes');
     if (notesInput) {
         notesInput.addEventListener('input', function() {
             // 평가 내용: 한글(자모 포함), 영문, 숫자, 공백, 문장부호만 허용
@@ -217,11 +206,11 @@ document.addEventListener('DOMContentLoaded', function() {
     scoreInputs.forEach(input => {
         input.addEventListener('change', function() {
             // 모든 라벨에서 active 클래스 제거
-            document.querySelectorAll('.score-selector label').forEach(label => {
-                label.classList.remove('active');
+            document.querySelectorAll('.score-selector label').forEach(labelEl => {
+                labelEl.classList.remove('active');
             });
             
-            // 선택된 라벨에 active 클래스 추가
+            // 선택된 라벨에 active 클래스 추가 (checked 상태와 동기화)
             if (this.checked) {
                 this.nextElementSibling.classList.add('active');
             }
@@ -233,12 +222,25 @@ document.addEventListener('DOMContentLoaded', function() {
             // 이미 선택된 버튼을 다시 클릭한 경우
             if (input.checked) {
                 e.preventDefault();
-                input.checked = false;
-                this.classList.remove('active');
+                e.stopPropagation();
                 
-                // change 이벤트 발생시키기
-                const changeEvent = new Event('change', { bubbles: true });
-                input.dispatchEvent(changeEvent);
+                // 모든 radio 버튼 해제
+                document.querySelectorAll('input[name="score"]').forEach(radio => {
+                    radio.checked = false;
+                });
+                
+                // 모든 라벨에서 active 클래스 제거
+                document.querySelectorAll('.score-selector label').forEach(labelEl => {
+                    labelEl.classList.remove('active');
+                });
+                
+                // 시각적 피드백을 위한 임시 스타일 추가
+                this.style.opacity = '0.7';
+                setTimeout(() => {
+                    this.style.opacity = '';
+                }, 200);
+                
+                return false;
             }
         });
     });
@@ -247,6 +249,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const checkedScore = document.querySelector('input[name="score"]:checked');
     if (checkedScore) {
         checkedScore.nextElementSibling.classList.add('active');
+    } else {
+        // 기존 데이터가 0점인 경우 처리 (0점 버튼이 제거되었으므로)
+        // 아무것도 선택되지 않은 상태로 유지
     }
 });
 </script>
@@ -262,14 +267,18 @@ document.addEventListener('DOMContentLoaded', function() {
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-.score-selector .btn.active {
-    transform: scale(1.05);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-}
-
 .score-selector .btn-check:checked + .btn {
     transform: scale(1.05);
     box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    z-index: 10;
+    position: relative;
+}
+
+.score-selector .btn.active {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    z-index: 10;
+    position: relative;
 }
 </style>
 {% endblock %}
