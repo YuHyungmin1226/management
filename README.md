@@ -1,7 +1,7 @@
 # 🎓 학생 관리 시스템 (Student Management System)
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![Flask](https://img.shields.io/badge/Flask-2.3+-green.svg)](https://flask.palletsprojects.com/)
+[![Flask](https://img.shields.io/badge/Flask-3.1+-green.svg)](https://flask.palletsprojects.com/)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3+-purple.svg)](https://getbootstrap.com/)
 [![SQLite](https://img.shields.io/badge/SQLite-3.0+-yellow.svg)](https://www.sqlite.org/)
 [![Portable](https://img.shields.io/badge/Portable-USB%20Ready-brightgreen.svg)](https://pyinstaller.org/)
@@ -17,6 +17,7 @@
 - [주요 기능](#-주요-기능)
 - [기술 스택](#-기술-스택)
 - [설치 및 실행](#-설치-및-실행)
+- [포터블 배포](#-포터블-배포)
 - [사용법](#-사용법)
 - [UI/UX 개선사항](#-uiux-개선사항)
 - [문제 해결 및 디버깅](#-문제-해결-및-디버깅)
@@ -34,12 +35,11 @@
 ### 핵심 특징
 
 - **🚀 완전 포터블**: Python 설치 없이 USB에서 바로 실행
+- **🖥️ 크로스 플랫폼**: macOS와 Windows 모두 지원
 - **📱 반응형 디자인**: 모든 디바이스에서 최적화된 사용자 경험
-- **🌙 다크모드 지원**: 사용자 선호도에 따른 테마 전환
 - **⚡ 실시간 검색**: 학생 정보 즉시 검색 및 필터링
 - **📊 CSV 일괄 처리**: 대량 데이터 효율적 관리
 - **🔒 보안 강화**: CSRF 보호 및 입력 검증
-- **♿ 접근성**: 스크린 리더 및 키보드 네비게이션 지원
 - **📝 로깅 시스템**: 상세한 작업 로그 및 에러 추적
 - **🔤 한글 자모 완전 지원**: 자모 조합 입력 및 검색 완벽 지원
 - **🎨 깔끔한 UI**: 과도한 시각적 효과 제거로 직관적인 인터페이스
@@ -70,7 +70,6 @@
 
 ### 🔧 시스템 기능
 
-- **다크모드 토글**: 사용자 선호 테마 설정
 - **플래시 메시지**: 작업 결과 실시간 알림
 - **드래그 앤 드롭**: 직관적인 파일 업로드
 - **반응형 레이아웃**: 모든 화면 크기 최적화
@@ -84,7 +83,7 @@
 ### 백엔드
 
 - **Python 3.8+**: 메인 프로그래밍 언어
-- **Flask 2.3+**: 웹 프레임워크
+- **Flask 3.1+**: 웹 프레임워크
 - **SQLAlchemy**: ORM 및 데이터베이스 관리
 - **Flask-WTF**: 폼 처리 및 CSRF 보호
 - **Flask-Limiter**: 요청 제한 및 보안
@@ -111,24 +110,7 @@
 
 ## 🚀 설치 및 실행
 
-### 🎯 빠른 시작 (포터블 버전)
-
-**Python 설치 없이 바로 사용!**
-
-1. **포터블 패키지 다운로드**: `학생관리시스템_포터블` 폴더
-2. **실행**: `학생관리시스템.exe` 더블클릭
-3. **접속**: 브라우저에서 `http://localhost:5000`
-
-### 📦 포터블 패키지 구성
-
-```
-학생관리시스템_포터블/
-├── 학생관리시스템.exe    # 33MB (완전 독립 실행 파일)
-├── README.md            # 상세 설명서
-└── 사용법.txt          # 간단 사용법
-```
-
-### 🔧 개발 환경 설치 (선택사항)
+### 🔧 개발 환경 설치
 
 - Python 3.8 이상
 - pip (Python 패키지 관리자)
@@ -160,24 +142,14 @@ pip install -r requirements.txt
 
 ### 4. 애플리케이션 실행
 
-#### 방법 1: 직접 실행
 ```bash
 python management_app.py
-```
-
-#### 방법 2: 실행 스크립트 사용
-```bash
-# Windows
-run.bat
-
-# macOS/Linux
-./run.sh
 ```
 
 ### 5. 브라우저에서 접속
 
 ```text
-http://localhost:5000
+http://localhost:5003
 ```
 
 ## 🚀 포터블 배포
@@ -190,38 +162,49 @@ http://localhost:5000
 
 ```
 학생관리시스템_포터블/
-├── 학생관리시스템.exe    # 33MB (완전 독립 실행 파일)
-├── README.md            # 상세 설명서
-└── 사용법.txt          # 간단 사용법
+├── 학생관리시스템_mac              # 27MB macOS 실행 파일 (ARM64)
+├── 학생관리시스템_windows.exe      # Windows 실행 파일
+├── 사용법.txt                     # 간단 사용법
+├── management.db                  # 데이터베이스 파일
+└── management.log                 # 로그 파일
 ```
 
 ### 🚀 사용 방법
 
-1. **USB에 복사**: `학생관리시스템_포터블` 폴더를 USB에 복사
-2. **실행**: `학생관리시스템.exe` 더블클릭
-3. **접속**: 브라우저에서 `http://localhost:5000`
+#### macOS
+1. **터미널에서 실행**: `./학생관리시스템_mac`
+2. **브라우저 접속**: `http://localhost:5003`
+
+#### Windows
+1. **더블클릭 실행**: `학생관리시스템_windows.exe`
+2. **브라우저 접속**: `http://localhost:5003`
+
+### 🔧 빌드 스크립트
+
+#### macOS 빌드
+```bash
+./build_mac.sh
+```
+
+#### Windows 빌드
+```bash
+build_windows.bat
+```
 
 ### ⚙️ 환경 변수 설정 (선택사항)
 
 ```bash
+# 포트 변경
+FLASK_RUN_PORT=5004 ./학생관리시스템_mac
+
 # 개발 환경
-set FLASK_ENV=development
+export FLASK_ENV=development
 
 # 운영 환경
-set FLASK_ENV=production
+export FLASK_ENV=production
 
 # 로그 레벨 설정
-set LOG_LEVEL=DEBUG
-```
-
-### 🔧 개발용 빌드 (선택사항)
-
-```bash
-# PyInstaller 설치
-pip install pyinstaller
-
-# 실행 파일 생성
-pyinstaller --onefile --add-data "templates;templates" management_app.py
+export LOG_LEVEL=DEBUG
 ```
 
 ## 📖 사용법
@@ -345,12 +328,23 @@ rm instance/students.db
 python management_app.py
 ```
 
-#### 3. 포트 충돌
+#### 3. 포트 충돌 (macOS)
+
+macOS의 AirPlay Receiver가 포트 5003을 사용하는 경우:
 
 ```bash
-# 다른 포트로 실행
-python management_app.py --port 5001
+# 방법 1: AirPlay Receiver 비활성화
+# 시스템 환경설정 → 일반 → AirDrop 및 Handoff → AirPlay Receiver 비활성화
+
+# 방법 2: 다른 포트 사용
+FLASK_RUN_PORT=5004 ./학생관리시스템_mac
 ```
+
+#### 4. Windows Defender 경고
+
+Windows에서 실행 파일이 차단되는 경우:
+- Windows Defender에서 "추가 정보" → "실행" 클릭
+- 또는 Windows Defender 설정에서 예외 추가
 
 ### 디버깅 모드
 
@@ -364,7 +358,7 @@ python management_app.py
 
 ```bash
 # 애플리케이션 로그 확인
-tail -f logs/app.log
+tail -f management.log
 ```
 
 ## 📁 프로젝트 구조
@@ -374,6 +368,14 @@ tail -f logs/app.log
 ```text
 management/
 ├── .git/                          # Git 저장소
+├── .gitignore                     # Git 무시 파일
+├── build_mac.sh                   # 🍎 macOS 빌드 스크립트
+├── build_windows.bat              # 🪟 Windows 빌드 스크립트
+├── config.py                      # 환경 설정
+├── management_app.py              # 메인 애플리케이션
+├── README.md                      # 프로젝트 문서
+├── requirements.txt               # Python 의존성
+├── run_smoke_test.py             # 스모크 테스트
 ├── templates/                     # HTML 템플릿
 │   ├── base.html                 # 기본 레이아웃
 │   ├── index.html                # 메인 페이지
@@ -385,27 +387,23 @@ management/
 │   ├── import_students.html      # CSV 업로드
 │   ├── 404.html                  # 404 에러 페이지
 │   └── 500.html                  # 500 에러 페이지
-├── management_app.py              # 메인 애플리케이션
-├── config.py                      # 환경 설정
-├── requirements.txt               # Python 의존성
-├── run_smoke_test.py             # 스모크 테스트
-├── README.md                     # 프로젝트 문서
-├── .gitignore                    # Git 무시 파일
-├── management.db                 # 개발용 데이터베이스
-├── management.log                # 개발용 로그 파일
 └── 학생관리시스템_포터블/          # 🚀 포터블 배포 패키지
-    ├── 학생관리시스템.exe         # 33MB 실행 파일
-    ├── README.md                 # 상세 설명서
-    └── 사용법.txt               # 간단 사용법
+    ├── 학생관리시스템_mac          # 27MB macOS 실행 파일
+    ├── 학생관리시스템_windows.exe  # Windows 실행 파일
+    ├── 사용법.txt                 # 간단 사용법
+    ├── management.db              # 데이터베이스 파일
+    └── management.log             # 로그 파일
 ```
 
 ### 🚀 포터블 배포 구조
 
 ```text
 학생관리시스템_포터블/
-├── 학생관리시스템.exe    # 완전 독립 실행 파일 (33MB)
-├── README.md            # 상세 사용 설명서
-└── 사용법.txt          # 간단 사용법
+├── 학생관리시스템_mac              # 27MB macOS 실행 파일 (ARM64)
+├── 학생관리시스템_windows.exe      # Windows 실행 파일
+├── 사용법.txt                     # 간단 사용법
+├── management.db                  # 데이터베이스 파일
+└── management.log                 # 로그 파일
 ```
 
 ## 📚 API 문서
@@ -536,8 +534,9 @@ python run_smoke_test.py
 
 # 포터블 버전 테스트
 cd 학생관리시스템_포터블
-학생관리시스템.exe
-# 브라우저에서 http://localhost:5000 접속하여 기능 테스트
+./학생관리시스템_mac  # macOS
+학생관리시스템_windows.exe  # Windows
+# 브라우저에서 http://localhost:5003 접속하여 기능 테스트
 ```
 
 ### ✅ 테스트 결과
