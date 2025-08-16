@@ -409,10 +409,18 @@ def too_large(error):
 if __name__ == '__main__':
     logger.info('학생 관리 시스템 시작')
     
+    # 데이터베이스 경로 로깅 추가
+    logger.info(f'데이터베이스 경로: {app.config["SQLALCHEMY_DATABASE_URI"]}')
+    
     try:
         with app.app_context():
             db.create_all()
             logger.info('데이터베이스 초기화 완료')
+            
+            # 데이터베이스에 학생이 몇 명 있는지 확인
+            student_count = Student.query.count()
+            logger.info(f'데이터베이스에 학생 {student_count}명이 있습니다')
+            
     except Exception as e:
         logger.error(f'데이터베이스 초기화 실패: {e}')
         print(f'데이터베이스 초기화 실패: {e}')
