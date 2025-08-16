@@ -16,7 +16,17 @@ from flask_wtf import CSRFProtect
 def setup_logging():
     """로깅 설정 초기화"""
     log_level = getattr(logging, os.environ.get('LOG_LEVEL', 'INFO').upper())
-    log_file = os.environ.get('LOG_FILE', 'management.log')
+    log_file_name = os.environ.get('LOG_FILE', 'management.log')
+    
+    # 로그 파일 경로 설정 (실행 파일과 같은 디렉토리)
+    if getattr(sys, 'frozen', False):
+        # PyInstaller로 빌드된 경우
+        current_dir = os.path.dirname(sys.executable)
+    else:
+        # 일반 Python 실행의 경우
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    log_file = os.path.join(current_dir, log_file_name)
     
     logging.basicConfig(
         level=log_level,
@@ -398,10 +408,23 @@ def too_large(error):
 
 if __name__ == '__main__':
     logger.info('학생 관리 시스템 시작')
-    with app.app_context():
-        db.create_all()
-        logger.info('데이터베이스 초기화 완료')
+    
+    try:
+        with app.app_context():
+            db.create_all()
+            logger.info('데이터베이스 초기화 완료')
+    except Exception as e:
+        logger.error(f'데이터베이스 초기화 실패: {e}')
+        print(f'데이터베이스 초기화 실패: {e}')
+        sys.exit(1)
     
     # 환경 변수에서 포트 설정 가져오기
     port = int(os.environ.get('FLASK_RUN_PORT', 5003))
-    app.run(debug=False, host='0.0.0.0', port=port) 
+    
+    try:
+        logger.info(f'서버 시작: http://localhost:{port}')
+        app.run(debug=False, host='0.0.0.0', port=port)
+    except Exception as e:
+        logger.error(f'서버 시작 실패: {e}')
+        print(f'서버 시작 실패: {e}')
+        sys.exit(1) 

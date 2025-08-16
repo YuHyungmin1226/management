@@ -4,3 +4,5 @@ Flask-WTF==1.2.1
 # Flask-Limiter==3.9.2  # 포터블 버전에서 제거 (불필요한 복잡성)
 Flask-Migrate==4.0.7
 email_validator==2.2.0
+# PyInstaller (빌드 시 자동 설치)
+# pygame (PyInstaller 의존성, 자동 설치)

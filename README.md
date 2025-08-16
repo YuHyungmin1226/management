@@ -162,10 +162,10 @@ http://localhost:5003
 
 ```
 student_management_portable/
-├── student_management.exe         # 33MB Windows 실행 파일
-├── student_management_mac         # 27MB macOS 실행 파일 (ARM64)
-├── README.md                      # 상세 설명서
-└── usage.txt                      # 간단 사용법
+├── student_management.exe         # Windows 실행 파일
+├── student_management_mac         # macOS 실행 파일 (Universal Binary)
+├── usage.txt                      # 간단 사용법
+└── management.db                  # 데이터베이스 파일 (자동 생성)
 ```
 
 ### 🚀 사용 방법
@@ -182,7 +182,11 @@ student_management_portable/
 
 #### macOS 빌드
 ```bash
+# 기본 빌드
 ./build_mac.sh
+
+# 개선된 빌드 (Universal Binary 지원)
+./build_mac_improved.sh
 ```
 
 #### Windows 빌드

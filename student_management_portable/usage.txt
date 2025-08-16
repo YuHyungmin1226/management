@@ -1,13 +1,13 @@
-�� 학생 관리 시스템 - 포터블 버전
+��📚 학생 관리 시스템 - 포터블 버전
 
 🚀 빠른 시작
 
 ## macOS
-1. 터미널에서: ./학생관리시스템_mac
+1. 터미널에서: ./student_management_mac
 2. 브라우저에서: http://localhost:5003
 
 ## Windows
-1. 더블클릭: 학생관리시스템_windows.exe
+1. 더블클릭: student_management.exe
 2. 브라우저에서: http://localhost:5003
 
 📝 주요 기능
@@ -29,8 +29,8 @@
 
 🚨 포트 충돌 시
 다른 포트로 실행:
-• macOS: FLASK_RUN_PORT=5004 ./학생관리시스템_mac
-• Windows: FLASK_RUN_PORT=5004 학생관리시스템_windows.exe
+• macOS: FLASK_RUN_PORT=5004 ./student_management_mac
+• Windows: FLASK_RUN_PORT=5004 student_management.exe
 • 접속: http://localhost:5004
 
 📞 문제 발생 시

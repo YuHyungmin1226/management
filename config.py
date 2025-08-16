@@ -16,7 +16,14 @@ class Config:
         # 일반 Python 실행의 경우
         current_dir = os.path.dirname(os.path.abspath(__file__))
     
+    # 데이터베이스 파일을 실행 파일과 같은 디렉토리에 생성
     db_path = os.path.join(current_dir, 'management.db')
+    
+    # 데이터베이스 디렉토리가 존재하지 않으면 생성
+    db_dir = os.path.dirname(db_path)
+    if not os.path.exists(db_dir):
+        os.makedirs(db_dir, exist_ok=True)
+    
     SQLALCHEMY_DATABASE_URI = f'sqlite:///{db_path}'
     
     # 요청 제한 설정 (Flask-Limiter 제거로 인해 비활성화)
