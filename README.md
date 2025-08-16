@@ -161,22 +161,21 @@ http://localhost:5003
 ### 📦 포터블 패키지 구성
 
 ```
-학생관리시스템_포터블/
-├── 학생관리시스템_mac              # 27MB macOS 실행 파일 (ARM64)
-├── 학생관리시스템_windows.exe      # Windows 실행 파일
-├── 사용법.txt                     # 간단 사용법
-├── management.db                  # 데이터베이스 파일
-└── management.log                 # 로그 파일
+student_management_portable/
+├── student_management.exe         # 33MB Windows 실행 파일
+├── student_management_mac         # 27MB macOS 실행 파일 (ARM64)
+├── README.md                      # 상세 설명서
+└── usage.txt                      # 간단 사용법
 ```
 
 ### 🚀 사용 방법
 
 #### macOS
-1. **터미널에서 실행**: `./학생관리시스템_mac`
+1. **터미널에서 실행**: `./student_management_mac`
 2. **브라우저 접속**: `http://localhost:5003`
 
 #### Windows
-1. **더블클릭 실행**: `학생관리시스템_windows.exe`
+1. **더블클릭 실행**: `student_management.exe`
 2. **브라우저 접속**: `http://localhost:5003`
 
 ### 🔧 빌드 스크립트
@@ -195,7 +194,7 @@ build_windows.bat
 
 ```bash
 # 포트 변경
-FLASK_RUN_PORT=5004 ./학생관리시스템_mac
+FLASK_RUN_PORT=5004 ./student_management_mac
 
 # 개발 환경
 export FLASK_ENV=development

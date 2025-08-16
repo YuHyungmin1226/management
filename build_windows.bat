@@ -24,15 +24,15 @@ pip install -r requirements.txt
 
 REM 빌드 실행
 echo Windows용 실행 파일을 빌드합니다...
-pyinstaller --onefile --add-data "templates;templates" --hidden-import=mmap --hidden-import=multiprocessing --hidden-import=_csv --name "학생관리시스템_windows" management_app.py
+pyinstaller --onefile --add-data "templates;templates" --hidden-import=mmap --hidden-import=multiprocessing --hidden-import=_csv --name "student_management" management_app.py
 
 REM 빌드 결과 확인
-if exist "dist\학생관리시스템_windows.exe" (
+if exist "dist\student_management.exe" (
     echo.
     echo 빌드 성공!
-    echo dist\학생관리시스템_windows.exe 파일을 학생관리시스템_포터블 폴더로 복사하세요.
+    echo dist\student_management.exe 파일을 student_management_portable 폴더로 복사하세요.
     echo.
-    copy "dist\학생관리시스템_windows.exe" "학생관리시스템_포터블\학생관리시스템_windows.exe"
+    copy "dist\student_management.exe" "student_management_portable\student_management.exe"
     echo 파일이 복사되었습니다.
 ) else (
     echo.

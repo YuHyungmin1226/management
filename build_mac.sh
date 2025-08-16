@@ -28,10 +28,10 @@ pyinstaller --onefile --add-data "templates:templates" --hidden-import=mmap --hi
 if [ -f "dist/학생관리시스템_mac" ]; then
     echo
     echo "빌드 성공!"
-    echo "dist/학생관리시스템_mac 파일을 학생관리시스템_포터블 폴더로 복사합니다."
+    echo "dist/학생관리시스템_mac 파일을 student_management_portable 폴더로 복사합니다."
     echo
-    cp "dist/학생관리시스템_mac" "학생관리시스템_포터블/학생관리시스템_mac"
-    chmod +x "학생관리시스템_포터블/학생관리시스템_mac"
+    cp "dist/학생관리시스템_mac" "student_management_portable/student_management_mac"
+    chmod +x "student_management_portable/student_management_mac"
     echo "파일이 복사되었습니다."
 else
     echo
