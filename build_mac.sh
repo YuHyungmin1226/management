@@ -62,11 +62,11 @@ if pyinstaller \
     --hidden-import=flask_wtf \
     --hidden-import=jinja2 \
     --hidden-import=jinja2.ext \
-    --name "학생관리시스템_mac" \
-    --target-architecture universal2 \
-    --clean \
-    --exclude-module=tkinter \
-    management_app.py 2>/dev/null; then
+            --name "student_management_mac" \
+        --target-architecture universal2 \
+        --clean \
+        --exclude-module=tkinter \
+        management_app.py 2>/dev/null; then
     echo "✅ Universal Binary 빌드 성공!"
 else
     echo "⚠️  Universal Binary 빌드 실패, 현재 아키텍처로 빌드합니다..."
@@ -82,26 +82,26 @@ else
         --hidden-import=flask_wtf \
         --hidden-import=jinja2 \
         --hidden-import=jinja2.ext \
-        --name "학생관리시스템_mac" \
+        --name "student_management_mac" \
         --clean \
         --exclude-module=tkinter \
         management_app.py
 fi
 
 # 빌드 결과 확인
-if [ -f "dist/학생관리시스템_mac" ]; then
+if [ -f "dist/student_management_mac" ]; then
     echo
     echo "✅ 빌드 성공!"
     echo "📁 파일 정보:"
-    ls -lh "dist/학생관리시스템_mac"
+    ls -lh "dist/student_management_mac"
     
     echo
     echo "🏗️  아키텍처 정보:"
-    lipo -info "dist/학생관리시스템_mac"
+    lipo -info "dist/student_management_mac"
     
     echo
     echo "📋 파일을 student_management_portable 폴더로 복사합니다..."
-    cp "dist/학생관리시스템_mac" "student_management_portable/student_management_mac"
+    cp "dist/student_management_mac" "student_management_portable/student_management_mac"
     chmod +x "student_management_portable/student_management_mac"
     
     echo "✅ 파일이 복사되었습니다."
