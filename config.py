@@ -19,8 +19,8 @@ class Config:
     db_path = os.path.join(current_dir, 'management.db')
     SQLALCHEMY_DATABASE_URI = f'sqlite:///{db_path}'
     
-    # 요청 제한 설정
-    RATELIMIT_STORAGE_URI = os.environ.get("RATELIMIT_STORAGE_URI", "memory://")
+    # 요청 제한 설정 (Flask-Limiter 제거로 인해 비활성화)
+    # RATELIMIT_STORAGE_URI = os.environ.get("RATELIMIT_STORAGE_URI", "memory://")
     
     # 파일 업로드 설정
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
@@ -44,7 +44,7 @@ class TestingConfig(Config):
     """테스트 환경 설정"""
     TESTING = True
     WTF_CSRF_ENABLED = False
-    RATELIMIT_ENABLED = False
+    # RATELIMIT_ENABLED = False  # Flask-Limiter 제거로 인해 비활성화
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
 
 # 설정 매핑

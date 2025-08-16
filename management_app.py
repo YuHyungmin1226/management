@@ -8,8 +8,9 @@ import os
 import sys
 import logging
 from flask_wtf import CSRFProtect
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
+# Flask-Limiter 제거 (포터블 버전에서 불필요한 복잡성 제거)
+# from flask_limiter import Limiter
+# from flask_limiter.util import get_remote_address
 
 # 로깅 설정
 def setup_logging():
@@ -46,12 +47,13 @@ app.config.from_object(config[config_name])
 
 db = SQLAlchemy(app)
 csrf = CSRFProtect(app)
-limiter = Limiter(
-    get_remote_address,
-    app=app,
-    default_limits=["200 per day", "50 per hour"],
-    storage_uri=app.config['RATELIMIT_STORAGE_URI'],
-)
+# Flask-Limiter 제거 (포터블 버전에서 불필요한 복잡성 제거)
+# limiter = Limiter(
+#     get_remote_address,
+#     app=app,
+#     default_limits=["200 per day", "50 per hour"],
+#     storage_uri=app.config['RATELIMIT_STORAGE_URI'],
+# )
 
 @app.context_processor
 def inject_csrf_token():
@@ -98,7 +100,6 @@ def index():
     return render_template('index.html', students=students, q=query)
 
 @app.route('/student/new', methods=['GET', 'POST'])
-@limiter.limit("20/hour")
 def add_student():
     if request.method == 'POST':
         student_number = request.form.get('student_number')
@@ -131,7 +132,6 @@ def view_student(student_id):
     return render_template('view_student.html', student=student)
 
 @app.route('/student/<int:student_id>/edit', methods=['GET', 'POST'])
-@limiter.limit("30/hour")
 def edit_student(student_id):
     student = Student.query.get_or_404(student_id)
     if request.method == 'POST':
@@ -159,8 +159,7 @@ def edit_student(student_id):
         return redirect(url_for('view_student', student_id=student.id))
     return render_template('edit_student.html', student=student)
 
-@app.route('/student/<int:student_id>/delete', methods=['POST'])
-@limiter.limit("30/hour")
+@app.route('/student/<int:student_id>/delete', methods=['GET', 'POST'])
 def delete_student(student_id):
     student = Student.query.get_or_404(student_id)
     db.session.delete(student)
@@ -169,7 +168,6 @@ def delete_student(student_id):
     return redirect(url_for('index'))
 
 @app.route('/student/<int:student_id>/evaluation/new', methods=['GET', 'POST'])
-@limiter.limit("60/hour")
 def add_evaluation(student_id):
     student = Student.query.get_or_404(student_id)
     if request.method == 'POST':
@@ -217,7 +215,6 @@ def add_evaluation(student_id):
     return render_template('add_evaluation.html', student=student, today=date.today())
 
 @app.route('/evaluation/<int:evaluation_id>/edit', methods=['GET', 'POST'])
-@limiter.limit("60/hour")
 def edit_evaluation(evaluation_id):
     evaluation = Evaluation.query.get_or_404(evaluation_id)
     student = evaluation.student
@@ -266,7 +263,6 @@ def edit_evaluation(evaluation_id):
     return render_template('edit_evaluation.html', evaluation=evaluation, student=student, today=date.today())
 
 @app.route('/evaluation/<int:evaluation_id>/delete', methods=['POST'])
-@limiter.limit("60/hour")
 def delete_evaluation(evaluation_id):
     evaluation = Evaluation.query.get_or_404(evaluation_id)
     student_id = evaluation.student_id
@@ -408,4 +404,4 @@ if __name__ == '__main__':
     
     # 환경 변수에서 포트 설정 가져오기
     port = int(os.environ.get('FLASK_RUN_PORT', 5003))
-    app.run(debug=True, host='0.0.0.0', port=port) 
+    app.run(debug=False, host='0.0.0.0', port=port) 
