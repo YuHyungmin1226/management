@@ -182,11 +182,8 @@ student_management_portable/
 
 #### macOS 빌드
 ```bash
-# 기본 빌드
+# 개선된 빌드 (Universal Binary 지원 시도, 인코딩 최적화)
 ./build_mac.sh
-
-# 개선된 빌드 (Universal Binary 지원)
-./build_mac_improved.sh
 ```
 
 #### Windows 빌드
@@ -340,7 +337,20 @@ macOS의 AirPlay Receiver가 포트 5003을 사용하는 경우:
 # 시스템 환경설정 → 일반 → AirDrop 및 Handoff → AirPlay Receiver 비활성화
 
 # 방법 2: 다른 포트 사용
-FLASK_RUN_PORT=5004 ./학생관리시스템_mac
+FLASK_RUN_PORT=5004 ./student_management_mac
+
+#### 4. 맥용 실행파일 유니코드 오류
+
+더블클릭 실행 시 유니코드 인코딩 오류가 발생하는 경우:
+
+```bash
+# 방법 1: 터미널에서 실행 (권장)
+cd student_management_portable
+./student_management_mac
+
+# 방법 2: 시스템 환경설정에서 실행 허용
+# 시스템 환경설정 → 보안 및 개인정보 보호 → 일반 → "확인되지 않은 개발자" 허용
+```
 ```
 
 #### 4. Windows Defender 경고
@@ -568,6 +578,8 @@ coverage html
 - **✅ 한글 자모 테스트**: 자모 조합 입력 및 검색 테스트
 - **✅ UI 개선 테스트**: 깔끔한 인터페이스 및 레이아웃 테스트
 - **✅ 점수 시스템 테스트**: -1, +1 토글 기능 및 0점 자동 처리 테스트
+- **✅ 크로스 플랫폼 테스트**: 윈도우/맥 데이터베이스 공유 테스트
+- **✅ 인코딩 테스트**: UTF-8 템플릿 파일 처리 테스트
 
 ## 🤝 기여하기
 

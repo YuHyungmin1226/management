@@ -29,6 +29,19 @@ pip3 install -r requirements.txt
 echo "🧹 기존 빌드 파일을 정리합니다..."
 rm -rf build dist *.spec
 
+# 템플릿 파일 인코딩 확인 및 변환
+echo "🔍 템플릿 파일 인코딩 확인..."
+for file in templates/*.html; do
+    if [ -f "$file" ]; then
+        encoding=$(file -b --mime-encoding "$file")
+        echo "   $file: $encoding"
+        if [ "$encoding" != "utf-8" ]; then
+            echo "   ⚠️  $file 인코딩 변환 중..."
+            iconv -f "$encoding" -t utf-8 "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
+        fi
+    fi
+done
+
 # 빌드 실행
 echo "🔨 macOS용 실행 파일을 빌드합니다..."
 echo "   - Universal Binary (Intel + Apple Silicon) 지원"
@@ -47,9 +60,12 @@ if pyinstaller \
     --hidden-import=flask \
     --hidden-import=flask_sqlalchemy \
     --hidden-import=flask_wtf \
+    --hidden-import=jinja2 \
+    --hidden-import=jinja2.ext \
     --name "학생관리시스템_mac" \
     --target-architecture universal2 \
     --clean \
+    --exclude-module=tkinter \
     management_app.py 2>/dev/null; then
     echo "✅ Universal Binary 빌드 성공!"
 else
@@ -64,8 +80,11 @@ else
         --hidden-import=flask \
         --hidden-import=flask_sqlalchemy \
         --hidden-import=flask_wtf \
+        --hidden-import=jinja2 \
+        --hidden-import=jinja2.ext \
         --name "학생관리시스템_mac" \
         --clean \
+        --exclude-module=tkinter \
         management_app.py
 fi
 
