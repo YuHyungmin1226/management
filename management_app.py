@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, make_response
 from sqlalchemy import or_
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from datetime import datetime, date
 import csv
 import io
@@ -8,6 +9,7 @@ import os
 import sys
 import logging
 from flask_wtf import CSRFProtect
+from werkzeug.security import generate_password_hash, check_password_hash
 # Flask-Limiter 제거 (포터블 버전에서 불필요한 복잡성 제거)
 # from flask_limiter import Limiter
 # from flask_limiter.util import get_remote_address
@@ -57,6 +59,14 @@ app.config.from_object(config[config_name])
 
 db = SQLAlchemy(app)
 csrf = CSRFProtect(app)
+
+# Flask-Login 초기화
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+login_manager.login_message = '이 페이지에 접근하려면 로그인이 필요합니다.'
+login_manager.login_message_category = 'warning'
+
 # Flask-Limiter 제거 (포터블 버전에서 불필요한 복잡성 제거)
 # limiter = Limiter(
 #     get_remote_address,
@@ -65,12 +75,31 @@ csrf = CSRFProtect(app)
 #     storage_uri=app.config['RATELIMIT_STORAGE_URI'],
 # )
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
 @app.context_processor
 def inject_csrf_token():
     from flask_wtf.csrf import generate_csrf
     return dict(csrf_token=generate_csrf)
 
 # 데이터베이스 모델
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(120), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_login = db.Column(db.DateTime)
+    
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+    
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_number = db.Column(db.String(20), unique=True, nullable=False)
@@ -94,7 +123,81 @@ def format_date_filter(value, format='%Y-%m-%d'):
         return ""
     return value.strftime(format)
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        if not username or not password:
+            flash('사용자명과 비밀번호를 입력해주세요.', 'error')
+            return render_template('login.html')
+        
+        user = User.query.filter_by(username=username).first()
+        if user and user.check_password(password):
+            login_user(user, remember=True)
+            user.last_login = datetime.utcnow()
+            db.session.commit()
+            
+            next_page = request.args.get('next')
+            if not next_page or not next_page.startswith('/'):
+                next_page = url_for('index')
+            flash(f'{user.username}님, 환영합니다!', 'success')
+            return redirect(next_page)
+        else:
+            flash('잘못된 사용자명 또는 비밀번호입니다.', 'error')
+    
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('로그아웃되었습니다.', 'info')
+    return redirect(url_for('login'))
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        
+        if not username or not email or not password:
+            flash('모든 필드를 입력해주세요.', 'error')
+            return render_template('register.html')
+        
+        if password != confirm_password:
+            flash('비밀번호가 일치하지 않습니다.', 'error')
+            return render_template('register.html')
+        
+        if User.query.filter_by(username=username).first():
+            flash('이미 존재하는 사용자명입니다.', 'error')
+            return render_template('register.html')
+        
+        if User.query.filter_by(email=email).first():
+            flash('이미 존재하는 이메일입니다.', 'error')
+            return render_template('register.html')
+        
+        user = User(username=username, email=email)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        
+        flash('회원가입이 완료되었습니다. 로그인해주세요.', 'success')
+        return redirect(url_for('login'))
+    
+    return render_template('register.html')
+
 @app.route('/')
+@login_required
 def index():
     query = request.args.get('q', '').strip()
     students_query = Student.query
@@ -110,6 +213,7 @@ def index():
     return render_template('index.html', students=students, q=query)
 
 @app.route('/student/new', methods=['GET', 'POST'])
+@login_required
 def add_student():
     if request.method == 'POST':
         student_number = request.form.get('student_number')
@@ -137,11 +241,13 @@ def add_student():
     return render_template('add_student.html')
 
 @app.route('/student/<int:student_id>')
+@login_required
 def view_student(student_id):
     student = Student.query.get_or_404(student_id)
     return render_template('view_student.html', student=student)
 
 @app.route('/student/<int:student_id>/edit', methods=['GET', 'POST'])
+@login_required
 def edit_student(student_id):
     student = Student.query.get_or_404(student_id)
     if request.method == 'POST':
@@ -170,6 +276,7 @@ def edit_student(student_id):
     return render_template('edit_student.html', student=student)
 
 @app.route('/student/<int:student_id>/delete', methods=['GET', 'POST'])
+@login_required
 def delete_student(student_id):
     student = Student.query.get_or_404(student_id)
     db.session.delete(student)
@@ -178,6 +285,7 @@ def delete_student(student_id):
     return redirect(url_for('index'))
 
 @app.route('/student/<int:student_id>/evaluation/new', methods=['GET', 'POST'])
+@login_required
 def add_evaluation(student_id):
     student = Student.query.get_or_404(student_id)
     if request.method == 'POST':
@@ -225,6 +333,7 @@ def add_evaluation(student_id):
     return render_template('add_evaluation.html', student=student, today=date.today())
 
 @app.route('/evaluation/<int:evaluation_id>/edit', methods=['GET', 'POST'])
+@login_required
 def edit_evaluation(evaluation_id):
     evaluation = Evaluation.query.get_or_404(evaluation_id)
     student = evaluation.student
@@ -273,6 +382,7 @@ def edit_evaluation(evaluation_id):
     return render_template('edit_evaluation.html', evaluation=evaluation, student=student, today=date.today())
 
 @app.route('/evaluation/<int:evaluation_id>/delete', methods=['POST'])
+@login_required
 def delete_evaluation(evaluation_id):
     evaluation = Evaluation.query.get_or_404(evaluation_id)
     student_id = evaluation.student_id
@@ -283,6 +393,7 @@ def delete_evaluation(evaluation_id):
 
 # 학생 CSV 일괄 등록
 @app.route('/students/import', methods=['GET', 'POST'])
+@login_required
 def import_students():
     if request.method == 'POST':
         file = request.files.get('file')
@@ -340,6 +451,7 @@ def import_students():
 
 # 특정 학생 평가 CSV 내보내기
 @app.route('/student/<int:student_id>/evaluations/export')
+@login_required
 def export_student_evaluations(student_id):
     student = Student.query.get_or_404(student_id)
     output = io.StringIO(newline='')
@@ -365,6 +477,7 @@ def export_student_evaluations(student_id):
 
 # 전체 평가 CSV 내보내기
 @app.route('/evaluations/export')
+@login_required
 def export_all_evaluations():
     output = io.StringIO(newline='')
     writer = csv.writer(output)
@@ -406,6 +519,20 @@ def too_large(error):
     flash('파일 크기가 너무 큽니다.', 'error')
     return redirect(request.referrer or url_for('index'))
 
+def create_default_admin():
+    """기본 관리자 계정 생성"""
+    admin = User.query.filter_by(username='admin').first()
+    if not admin:
+        admin = User(
+            username='admin',
+            email='admin@example.com',
+            is_admin=True
+        )
+        admin.set_password('admin123')
+        db.session.add(admin)
+        db.session.commit()
+        logger.info('기본 관리자 계정이 생성되었습니다. (사용자명: admin, 비밀번호: admin123)')
+
 if __name__ == '__main__':
     logger.info('학생 관리 시스템 시작')
     
@@ -415,6 +542,7 @@ if __name__ == '__main__':
     try:
         with app.app_context():
             db.create_all()
+            create_default_admin()
             logger.info('데이터베이스 초기화 완료')
             
             # 데이터베이스에 학생이 몇 명 있는지 확인

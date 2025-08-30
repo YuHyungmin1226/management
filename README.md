@@ -70,6 +70,9 @@
 
 ### 🔧 시스템 기능
 
+- **🔐 사용자 인증**: 로그인/회원가입 시스템
+- **👤 사용자 관리**: 관리자 및 일반 사용자 구분
+- **🔒 보안 강화**: 세션 기반 인증 및 CSRF 보호
 - **플래시 메시지**: 작업 결과 실시간 알림
 - **드래그 앤 드롭**: 직관적인 파일 업로드
 - **반응형 레이아웃**: 모든 화면 크기 최적화
@@ -86,6 +89,7 @@
 - **Flask 3.1+**: 웹 프레임워크
 - **SQLAlchemy**: ORM 및 데이터베이스 관리
 - **Flask-WTF**: 폼 처리 및 CSRF 보호
+- **Flask-Login**: 사용자 인증 및 세션 관리
 - **Flask-Limiter**: 요청 제한 및 보안
 
 ### 프론트엔드
@@ -208,6 +212,27 @@ export LOG_LEVEL=DEBUG
 ```
 
 ## 📖 사용법
+
+### 🔐 사용자 인증
+
+#### 기본 관리자 계정
+- **사용자명**: admin
+- **비밀번호**: admin123
+
+#### 로그인
+1. 브라우저에서 `http://localhost:5003` 접속
+2. 로그인 페이지에서 사용자명과 비밀번호 입력
+3. **로그인** 버튼 클릭
+
+#### 회원가입
+1. 로그인 페이지에서 **회원가입** 링크 클릭
+2. 사용자명, 이메일, 비밀번호 입력
+3. **회원가입** 버튼 클릭
+4. 생성된 계정으로 로그인
+
+#### 로그아웃
+1. 상단 네비게이션에서 사용자명 클릭
+2. **로그아웃** 메뉴 선택
 
 ### 학생 관리
 
@@ -391,6 +416,8 @@ management/
 ├── run_smoke_test.py             # 스모크 테스트
 ├── templates/                     # HTML 템플릿
 │   ├── base.html                 # 기본 레이아웃
+│   ├── login.html                # 로그인 페이지
+│   ├── register.html             # 회원가입 페이지
 │   ├── index.html                # 메인 페이지
 │   ├── add_student.html          # 학생 추가
 │   ├── edit_student.html         # 학생 수정
@@ -420,6 +447,33 @@ management/
 ```
 
 ## 📚 API 문서
+
+### 🔐 인증 API
+
+#### POST /login
+사용자 로그인
+
+```json
+{
+  "username": "admin",
+  "password": "admin123"
+}
+```
+
+#### POST /register
+새 사용자 등록
+
+```json
+{
+  "username": "newuser",
+  "email": "user@example.com",
+  "password": "password123",
+  "confirm_password": "password123"
+}
+```
+
+#### GET /logout
+사용자 로그아웃
 
 ### 학생 관리 API
 
