@@ -4,7 +4,7 @@ from datetime import datetime, UTC
 import os
 os.environ['FLASK_ENV'] = 'testing'
 
-from management_app import app, db, Student, Evaluation
+from management_app import app, db, Student, Evaluation, User
 
 
 def assert_in(text, haystack, label, failures):
@@ -25,15 +25,30 @@ def main():
         db.drop_all()
         db.create_all()
 
+        # 테스트용 사용자 생성
+        test_user = User(username='testuser', email='test@example.com')
+        test_user.set_password('testpass')
+        db.session.add(test_user)
+        db.session.commit()
+
         client = app.test_client()
 
-        # 1) 인덱스 페이지
+        # 1) 로그인 테스트
+        r = client.post('/login', data={
+            'username': 'testuser',
+            'password': 'testpass'
+        }, follow_redirects=True)
+        if r.status_code != 200:
+            failures.append(f"[login] status {r.status_code}")
+        assert_in('testuser님, 환영합니다!', r.get_data(as_text=True), 'login', failures)
+
+        # 2) 인덱스 페이지 (로그인 후)
         r = client.get('/')
         if r.status_code != 200:
             failures.append(f"[index] status {r.status_code}")
         assert_in('학생 목록', r.get_data(as_text=True), 'index', failures)
 
-        # 2) 학생 추가 성공
+        # 3) 학생 추가 성공
         r = client.post('/student/new', data={
             'student_number': 'S001',
             'name': '홍길동'
@@ -47,29 +62,30 @@ def main():
         if not s1:
             failures.append('[db] 학생 S001 조회 실패(초기)')
 
-        # 검색: 이름으로
+        # 4) 검색: 이름으로
         r = client.get('/?q=%ED%99%8D%EA%B8%B8%EB%8F%99')
         if r.status_code != 200:
             failures.append(f"[search_name] status {r.status_code}")
         assert_in('홍길동', r.get_data(as_text=True), 'search_name', failures)
 
-        # 검색: 학번으로
+        # 5) 검색: 학번으로
         r = client.get('/?q=S001')
         if r.status_code != 200:
             failures.append(f"[search_number] status {r.status_code}")
         assert_in('S001', r.get_data(as_text=True), 'search_number', failures)
 
-        # CSV 전체 평가 다운로드 (학생 추가 직후에도 빈 CSV여야 함)
+        # 6) CSV 전체 평가 다운로드 (학생 추가 직후에도 빈 CSV여야 함)
         r = client.get('/evaluations/export')
         if r.status_code != 200 or 'text/csv' not in r.headers.get('Content-Type', ''):
             failures.append('[export_all] CSV 응답 오류')
-        # 학생 평가 다운로드 (평가 추가 후)
-        r = client.get(f'/student/{s1.id}/evaluations/export')
-        if r.status_code != 200 or 'text/csv' not in r.headers.get('Content-Type', ''):
-            failures.append('[export_student] CSV 응답 오류')
+        
+        # 7) 학생 평가 다운로드 (평가 추가 후)
+        if s1:
+            r = client.get(f'/student/{s1.id}/evaluations/export')
+            if r.status_code != 200 or 'text/csv' not in r.headers.get('Content-Type', ''):
+                failures.append('[export_student] CSV 응답 오류')
 
-
-        # 3) 학생 추가 중복 오류
+        # 8) 학생 추가 중복 오류
         r = client.post('/student/new', data={
             'student_number': 'S001',
             'name': '아무개'
@@ -82,12 +98,12 @@ def main():
             print_result(failures)
             return 1
 
-        # 4) 학생 상세 보기
+        # 9) 학생 상세 보기
         r = client.get(f'/student/{s1.id}')
         if r.status_code != 200:
             failures.append(f"[view_student] status {r.status_code}")
 
-        # 5) 평가 추가 성공 (-5~5 정수)
+        # 10) 평가 추가 성공 (-5~5 정수)
         today = datetime.now(UTC).strftime('%Y-%m-%d')
         r = client.post(f'/student/{s1.id}/evaluation/new', data={
             'subject': '수학',
@@ -97,7 +113,7 @@ def main():
         }, follow_redirects=True)
         assert_in('평가가 성공적으로 추가되었습니다.', r.get_data(as_text=True), 'add_evaluation', failures)
 
-        # 6) 점수 범위 오류
+        # 11) 점수 범위 오류
         r = client.post(f'/student/{s1.id}/evaluation/new', data={
             'subject': '국어',
             'score': '6',
@@ -106,7 +122,7 @@ def main():
         }, follow_redirects=True)
         assert_in('점수는 -5에서 5 사이여야 합니다.', r.get_data(as_text=True), 'score_range', failures)
 
-        # 7) 평가 삭제
+        # 12) 평가 삭제
         ev = Evaluation.query.filter_by(student_id=s1.id).first()
         if not ev:
             failures.append('[db] 평가 조회 실패')
@@ -114,14 +130,14 @@ def main():
             r = client.post(f'/evaluation/{ev.id}/delete', follow_redirects=True)
             assert_in('평가가 성공적으로 삭제되었습니다.', r.get_data(as_text=True), 'delete_evaluation', failures)
 
-        # 8) 학생 수정 성공
+        # 13) 학생 수정 성공
         r = client.post(f'/student/{s1.id}/edit', data={
             'student_number': 'S001',
             'name': '홍길동2'
         }, follow_redirects=True)
         assert_in('학생 정보가 성공적으로 수정되었습니다.', r.get_data(as_text=True), 'edit_student', failures)
 
-        # 9) 학번 중복 검증(편집)
+        # 14) 학번 중복 검증(편집)
         r = client.post('/student/new', data={
             'student_number': 'S002',
             'name': '김철수'
@@ -136,9 +152,20 @@ def main():
             }, follow_redirects=True)
             assert_in('이미 존재하는 학번입니다.', r.get_data(as_text=True), 'edit_duplicate', failures)
 
-        # 10) 학생 삭제
+        # 15) 학생 삭제
         r = client.post(f'/student/{s1.id}/delete', follow_redirects=True)
         assert_in('학생이 성공적으로 삭제되었습니다.', r.get_data(as_text=True), 'delete_student', failures)
+
+        # 16) 로그아웃 테스트
+        r = client.get('/logout', follow_redirects=True)
+        if r.status_code != 200:
+            failures.append(f"[logout] status {r.status_code}")
+        assert_in('로그아웃되었습니다.', r.get_data(as_text=True), 'logout', failures)
+
+        # 17) 로그인 없이 접근 시도 (리다이렉트 확인)
+        r = client.get('/', follow_redirects=False)
+        if r.status_code != 302:  # 리다이렉트
+            failures.append(f"[unauthorized_access] status {r.status_code}")
 
     print_result(failures)
     return 0 if not failures else 1
