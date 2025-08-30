@@ -554,11 +554,11 @@ if __name__ == '__main__':
         print(f'데이터베이스 초기화 실패: {e}')
         sys.exit(1)
     
-    # Railway/AWS EC2 환경 대응 - 포트 설정
-    port = int(os.environ.get('PORT', os.environ.get('FLASK_RUN_PORT', 5003)))
+    # 환경 변수에서 포트 설정 가져오기
+    port = int(os.environ.get('FLASK_RUN_PORT', 5003))
     
     try:
-        logger.info(f'서버 시작: http://0.0.0.0:{port}')
+        logger.info(f'서버 시작: http://localhost:{port}')
         app.run(debug=False, host='0.0.0.0', port=port)
     except Exception as e:
         logger.error(f'서버 시작 실패: {e}')

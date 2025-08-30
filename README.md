@@ -156,64 +156,6 @@ python management_app.py
 http://localhost:5003
 ```
 
-## 🚂 Railway 배포 (권장)
-
-### 빠른 배포
-
-1. **GitHub에 코드 푸시**
-```bash
-git add .
-git commit -m "feat: Railway 배포 준비"
-git push origin main
-```
-
-2. **Railway 대시보드에서 배포**
-   - [Railway.app](https://railway.app)에 가입
-   - "Deploy from GitHub repo" 클릭
-   - 저장소 선택 후 자동 배포
-
-3. **환경 변수 설정**
-   - `FLASK_ENV=production`
-   - `SECRET_KEY=your-secret-key-here`
-
-4. **PostgreSQL 데이터베이스 추가**
-   - "New" → "Database" → "PostgreSQL" 선택
-
-## ☁️ AWS EC2 배포
-
-### 자동 배포
-
-```bash
-# EC2 인스턴스에 SSH 연결 후
-wget https://raw.githubusercontent.com/yourusername/management/main/deploy_aws.sh
-chmod +x deploy_aws.sh
-./deploy_aws.sh
-```
-
-### 수동 배포
-
-```bash
-# 시스템 설정
-sudo apt-get update
-sudo apt-get install -y python3 python3-pip python3-venv nginx
-
-# 프로젝트 클론
-git clone https://github.com/yourusername/management.git
-cd management
-
-# 가상환경 설정
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-
-# 애플리케이션 실행
-export FLASK_ENV=production
-export SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_hex(32))')
-nohup python management_app.py > app.log 2>&1 &
-```
-
-자세한 배포 가이드는 [DEPLOYMENT.md](DEPLOYMENT.md)를 참조하세요.
-
 ## 🚀 포터블 배포
 
 ### 🎯 완전 포터블 시스템
@@ -485,12 +427,6 @@ management/
 │   ├── import_students.html      # CSV 업로드
 │   ├── 404.html                  # 404 에러 페이지
 │   └── 500.html                  # 500 에러 페이지
-├── Procfile                      # Railway 배포 설정
-├── railway.json                  # Railway 배포 설정
-├── runtime.txt                   # Python 버전 설정
-├── deploy_aws.sh                 # AWS EC2 전체 배포 스크립트
-├── deploy_aws_simple.sh          # AWS EC2 간단 배포 스크립트
-└── DEPLOYMENT.md                 # 배포 가이드
 └── 학생관리시스템_포터블/          # 🚀 포터블 배포 패키지
     ├── 학생관리시스템_mac          # 27MB macOS 실행 파일
     ├── 학생관리시스템_windows.exe  # Windows 실행 파일

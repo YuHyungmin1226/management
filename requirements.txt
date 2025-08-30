@@ -6,7 +6,5 @@ Flask-Login==0.6.3
 Flask-Migrate==4.0.7
 email_validator==2.2.0
 Werkzeug>=3.1.0
-psycopg2-binary==2.9.9
-gunicorn==21.2.0
 # PyInstaller (빌드 시 자동 설치)
 # pygame (PyInstaller 의존성, 자동 설치)
