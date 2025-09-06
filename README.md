@@ -90,7 +90,6 @@
 - **SQLAlchemy**: ORM 및 데이터베이스 관리
 - **Flask-WTF**: 폼 처리 및 CSRF 보호
 - **Flask-Login**: 사용자 인증 및 세션 관리
-- **Flask-Limiter**: 요청 제한 및 보안
 
 ### 프론트엔드
 
@@ -453,142 +452,129 @@ management/
 #### POST /login
 사용자 로그인
 
-```json
-{
-  "username": "admin",
-  "password": "admin123"
-}
+```
+Form Data:
+- username: 사용자명
+- password: 비밀번호
 ```
 
 #### POST /register
 새 사용자 등록
 
-```json
-{
-  "username": "newuser",
-  "email": "user@example.com",
-  "password": "password123",
-  "confirm_password": "password123"
-}
+```
+Form Data:
+- username: 사용자명
+- email: 이메일
+- password: 비밀번호
+- confirm_password: 비밀번호 확인
 ```
 
 #### GET /logout
-사용자 로그아웃
+사용자 로그아웃 (로그인 필요)
 
 ### 학생 관리 API
 
-#### GET /students
+#### GET /
+메인 페이지 - 학생 목록 조회 (로그인 필요)
 
-학생 목록 조회
-
-```json
-{
-  "students": [
-    {
-      "id": 1,
-      "student_number": "S001",
-      "name": "홍길동",
-      "evaluation_count": 5,
-      "average_score": 3.2
-    }
-  ]
-}
+```
+Query Parameters:
+- q: 검색어 (선택사항, 학번 또는 이름으로 검색)
 ```
 
-#### POST /students
+#### GET /student/new
+학생 추가 폼 (로그인 필요)
 
-새 학생 등록
+#### POST /student/new
+새 학생 등록 (로그인 필요)
 
-```json
-{
-  "student_number": "S001",
-  "name": "홍길동"
-}
+```
+Form Data:
+- student_number: 학번
+- name: 이름
 ```
 
-#### PUT /students/{id}
+#### GET /student/{id}
+학생 상세 정보 조회 (로그인 필요)
 
-학생 정보 수정
+#### GET /student/{id}/edit
+학생 정보 수정 폼 (로그인 필요)
 
-```json
-{
-  "student_number": "S001",
-  "name": "홍길동"
-}
+#### POST /student/{id}/edit
+학생 정보 수정 (로그인 필요)
+
+```
+Form Data:
+- student_number: 학번
+- name: 이름
 ```
 
-#### DELETE /students/{id}
-
-학생 삭제
+#### POST /student/{id}/delete
+학생 삭제 (로그인 필요)
 
 ### 평가 관리 API
 
-#### GET /students/{id}/evaluations
+#### GET /student/{id}/evaluation/new
+평가 추가 폼 (로그인 필요)
 
-학생 평가 목록 조회
+#### POST /student/{id}/evaluation/new
+새 평가 등록 (로그인 필요)
 
-```json
-{
-  "evaluations": [
-    {
-      "id": 1,
-      "subject": "수학",
-      "score": 4,
-      "evaluation_date": "2024-01-15"
-    }
-  ]
-}
+```
+Form Data:
+- subject: 과목명 (필수)
+- score: 점수 (-5 ~ +5, 기본값 0)
+- evaluation_date: 평가일 (YYYY-MM-DD 형식)
+- notes: 메모 (선택사항)
 ```
 
-#### POST /students/{id}/evaluations
+#### GET /evaluation/{id}/edit
+평가 수정 폼 (로그인 필요)
 
-새 평가 등록
+#### POST /evaluation/{id}/edit
+평가 수정 (로그인 필요)
 
-```json
-{
-  "subject": "수학",
-  "score": 4
-}
+```
+Form Data:
+- subject: 과목명 (필수)
+- score: 점수 (-5 ~ +5)
+- evaluation_date: 평가일 (YYYY-MM-DD 형식)
+- notes: 메모 (선택사항)
 ```
 
-#### PUT /evaluations/{id}
-
-평가 수정
-
-```json
-{
-  "subject": "수학",
-  "score": 5
-}
-```
-
-#### DELETE /evaluations/{id}
-
-평가 삭제
+#### POST /evaluation/{id}/delete
+평가 삭제 (로그인 필요)
 
 ### CSV 처리 API
 
-#### POST /import-students
+#### GET /students/import
+CSV 파일 업로드 폼 (로그인 필요)
 
-CSV 파일 업로드
+#### POST /students/import
+학생 데이터 CSV 파일 업로드 (로그인 필요)
 
-```json
-{
-  "file": "students.csv",
-  "skip_duplicates": true,
-  "validate_data": true
-}
+```
+Form Data:
+- file: CSV 파일 (UTF-8 인코딩)
+  - 필수 컬럼: 학번, 이름
 ```
 
-#### GET /export-evaluations
+#### GET /student/{id}/evaluations/export
+특정 학생의 평가 데이터 CSV 다운로드 (로그인 필요)
 
-평가 데이터 내보내기
+```
+Response:
+- Content-Type: text/csv; charset=utf-8
+- Filename: evaluations_{student_number}.csv
+```
 
-```json
-{
-  "format": "csv",
-  "filename": "evaluations.csv"
-}
+#### GET /evaluations/export
+전체 평가 데이터 CSV 다운로드 (로그인 필요)
+
+```
+Response:
+- Content-Type: text/csv; charset=utf-8
+- Filename: evaluations_all.csv
 ```
 
 ## 🧪 테스트
@@ -702,7 +688,6 @@ SOFTWARE.
 - **[Bootstrap Icons](https://icons.getbootstrap.com/)**: 아이콘 라이브러리
 - **[PyInstaller](https://pyinstaller.org/)**: 포터블 실행 파일 생성
 - **[Flask-WTF](https://flask-wtf.readthedocs.io/)**: 폼 처리 및 CSRF 보호
-- **[Flask-Limiter](https://flask-limiter.readthedocs.io/)**: 요청 제한 및 보안
 
 ---
 
